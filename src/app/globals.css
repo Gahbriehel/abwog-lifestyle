@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Hex values are matched by eye to the Magic Patterns
+ * screenshots; swap in exact export values when available and re-check AA.
+ */
+:root {
+  --bg: #faf6ef;
+  --surface: #ffffff;
+  --surface-muted: #f3ece2;
+  --fg: #2b211f;
+  --fg-muted: #6b5f58;
+  --border: #e3d8cb;
+  --border-strong: #9a8b7e; /* ≥3:1 for form controls (WCAG 1.4.11) */
+  --primary: #5b2c5e;
+  --primary-hover: #4b2350;
+  --on-primary: #ffffff;
+  --primary-soft: #f1e3f1;
+  --primary-soft-fg: #5b2c5e;
+  --gold: #855c16; /* text-safe gold: ≥4.5:1 on cream and gold-soft */
+  --gold-fill: #c9973f;
+  --gold-soft: #f5e9d3;
+  --danger: #b42318;
+  --ring: #5b2c5e;
+  --logo-bg: #5b2c5e;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #241e1c;
+    --surface: #2f2826;
+    --surface-muted: #3a3230;
+    --fg: #f6efe8;
+    --fg-muted: #b9aca3;
+    --border: #4a403c;
+    --border-strong: #85766f;
+    --primary: #d4a5d6;
+    --primary-hover: #e0bce1;
+    --on-primary: #2a1a2b;
+    --primary-soft: #43303f;
+    --primary-soft-fg: #ecd3ec;
+    --gold: #d9b061;
+    --gold-fill: #d9b061;
+    --gold-soft: #4a3e2c;
+    --danger: #f59e8b;
+    --ring: #d4a5d6;
+    --logo-bg: #5b2c5e;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-fg: var(--primary-soft-fg);
+  --color-gold: var(--gold);
+  --color-gold-fill: var(--gold-fill);
+  --color-gold-soft: var(--gold-soft);
+  --color-danger: var(--danger);
+  --color-ring: var(--ring);
+  --color-logo-bg: var(--logo-bg);
+  --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --radius-control: 12px;
+  --radius-card: 16px;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Native date picker icon follows the theme. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+}
+@media (prefers-color-scheme: dark) {
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes burst {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+
+.animate-pop-in {
+  animation: pop-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.animate-burst {
+  animation: burst 900ms ease-out 200ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop-in,
+  .animate-burst {
+    animation: none;
+  }
+  .animate-burst {
+    opacity: 0;
+  }
+  * {
+    transition-duration: 0ms !important;
+  }
+}

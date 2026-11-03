@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en-NG">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>You're offline · Amazing Grace</title>
+    <style>
+      :root { --bg: #faf6ef; --fg: #2b211f; --muted: #6b5f58; --primary: #5b2c5e; --on-primary: #fff; color-scheme: light; }
+      @media (prefers-color-scheme: dark) {
+        :root { --bg: #241e1c; --fg: #f6efe8; --muted: #b9aca3; --primary: #d4a5d6; --on-primary: #2a1a2b; color-scheme: dark; }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; padding: 24px 20px; text-align: center; }
+      main { max-width: 26rem; }
+      .logo { width: 72px; height: 72px; border-radius: 50%; background: #5b2c5e; display: inline-flex; align-items: center; justify-content: center; }
+      h1 { font-family: Georgia, serif; font-size: 26px; margin: 24px 0 8px; }
+      p { color: var(--muted); margin: 0; }
+      button { margin-top: 28px; width: 100%; min-height: 48px; border: 0; border-radius: 12px; background: var(--primary); color: var(--on-primary); font: 600 15px system-ui, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="logo"><img src="/brand/icon-gold.png" alt="" width="44" height="36" /></span>
+      <h1>You're offline</h1>
+      <p>Please check your internet connection and try again.</p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>
