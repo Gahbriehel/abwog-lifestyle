@@ -93,6 +93,23 @@ body {
   outline-offset: 2px;
 }
 
+/*
+ * iOS Safari renders date inputs with a native appearance that ignores
+ * `width: 100%` and sizes to an intrinsic min-width, overflowing the
+ * container and causing horizontal page scroll. Dropping the native
+ * appearance makes it honour the box we give it, like any other input.
+ */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.5em;
+}
+
 /* Native date picker icon follows the theme. */
 input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.7;

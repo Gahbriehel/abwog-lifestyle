@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/cn";
 
 export const controlClasses =
-  "block min-h-12 w-full rounded-[var(--radius-control)] border bg-surface px-4 text-base text-fg placeholder:text-fg-muted/70 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring";
+  "block min-h-12 w-full min-w-0 rounded-[var(--radius-control)] border bg-surface px-4 text-base text-fg placeholder:text-fg-muted/70 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring";
 
 export function FieldError({ id, children }: { id: string; children?: ReactNode }) {
   if (!children) return null;
