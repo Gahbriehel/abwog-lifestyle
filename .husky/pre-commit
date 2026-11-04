@@ -1,0 +1,12 @@
+
+echo '🏗️👷 Type-checking, linting and testing your project before committing'
+
+# Run all checks (types, lint, tests)
+bun check-all ||
+    (
+        echo 'Checks failed. Please review errors and try to commit again.'
+        false
+    )
+
+# If everything passes... Now we can commit
+echo '✅✅✅✅ All checks passes successfully. Committing. ✅✅✅✅'

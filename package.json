@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "icons": "bun scripts/generate-icons.ts",
-    "check-all": "bun run check-types && bun run lint && bun run test"
+    "check-all": "bun run check-types && bun run lint && bun run test",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.1",
@@ -35,6 +36,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "husky": "^9.1.7",
     "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "^5",
