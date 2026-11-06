@@ -2,10 +2,15 @@ import { describe, expect, it } from "vitest";
 import { DoveError, toLinkProblem } from "./dove-errors";
 import { detectInstallContext } from "./install";
 import { maskEmail } from "./mask";
+import { isWeakPin, validateNewPin } from "./pin";
 import { formatForDisplay, toE164, toInputValue } from "./phone";
 import {
+  changePinSchemaFor,
+  loginSchema,
+  newPinSchema,
   profileSchema,
   profileSchemaFor,
+  toIdentifier,
   toUpdatePayload,
   type ProfileFormInput,
 } from "./validation";
@@ -191,5 +196,75 @@ describe("whatsapp helpers", () => {
     expect(card).toContain("BEGIN:VCARD\r\nVERSION:3.0\r\n");
     expect(card).toContain("TEL;TYPE=CELL:+2348012345678");
     expect(card.endsWith("END:VCARD\r\n")).toBe(true);
+  });
+});
+
+describe("PIN rules", () => {
+  it.each(["0000", "1111", "9999", "1234", "4321", "0123", "6789", "9876", "1212", "2580", "0852"])(
+    "%s is too weak",
+    (pin) => {
+      expect(isWeakPin(pin)).toBe(true);
+      expect(validateNewPin(pin)).toMatch(/too easy/);
+    },
+  );
+
+  it.each(["4729", "8153", "1357", "2468", "1990"])("%s is acceptable", (pin) => {
+    expect(isWeakPin(pin)).toBe(false);
+    expect(validateNewPin(pin)).toBeNull();
+  });
+
+  it.each(["", "123", "12345", "12a4", "abcd"])("%j is not a 4-digit PIN", (pin) => {
+    expect(validateNewPin(pin)).toBe("Your PIN must be exactly 4 digits.");
+  });
+});
+
+describe("new PIN form", () => {
+  it("requires the two entries to match", () => {
+    const result = newPinSchema.safeParse({ pin: "4729", confirmPin: "4728" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].path).toEqual(["confirmPin"]);
+    expect(newPinSchema.safeParse({ pin: "4729", confirmPin: "4729" }).success).toBe(true);
+  });
+
+  it("rejects weak PINs on the pin field", () => {
+    const result = newPinSchema.safeParse({ pin: "1234", confirmPin: "1234" });
+    expect(result.error?.issues[0].path).toEqual(["pin"]);
+  });
+});
+
+describe("change PIN form", () => {
+  const input = { currentPin: "", pin: "4729", confirmPin: "4729" };
+
+  it("only asks for the current PIN when one exists", () => {
+    expect(changePinSchemaFor({ hasPin: false }).safeParse(input).success).toBe(true);
+    const result = changePinSchemaFor({ hasPin: true }).safeParse(input);
+    expect(result.error?.issues[0].path).toEqual(["currentPin"]);
+    expect(changePinSchemaFor({ hasPin: true }).safeParse({ ...input, currentPin: "8153" }).success).toBe(
+      true,
+    );
+  });
+});
+
+describe("login form", () => {
+  it.each(["sarah@example.com", "08034567890", "+2348034567890", "803 456 7890"])(
+    "accepts %s",
+    (identifier) => {
+      expect(loginSchema.safeParse({ identifier, pin: "4729" }).success).toBe(true);
+    },
+  );
+
+  it.each(["", "sarah@", "12345", "not a number"])("rejects identifier %j", (identifier) => {
+    const result = loginSchema.safeParse({ identifier, pin: "4729" });
+    expect(result.error?.issues[0].path).toEqual(["identifier"]);
+  });
+
+  it("needs a 4-digit PIN", () => {
+    const result = loginSchema.safeParse({ identifier: "sarah@example.com", pin: "47" });
+    expect(result.error?.issues[0].path).toEqual(["pin"]);
+  });
+
+  it("sends phones as E.164 and emails lower-cased", () => {
+    expect(toIdentifier(" 0803 456 7890 ")).toBe("+2348034567890");
+    expect(toIdentifier("Sarah.Adeyemi@Example.com")).toBe("sarah.adeyemi@example.com");
   });
 });

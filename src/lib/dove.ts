@@ -1,9 +1,12 @@
 import "server-only";
 import { DoveError } from "./dove-errors";
 import type {
-  PersonProfile,
+  MemberLoginPayload,
+  MemberLoginResult,
+  MemberSession,
   ProfileBootstrap,
   UpdateProfilePayload,
+  UpdateProfileResult,
 } from "./types";
 
 const TIMEOUT_MS = 15_000;
@@ -19,6 +22,8 @@ interface DoveEnvelope<T> {
   message?: string | string[];
   code?: string;
   data?: T;
+  attemptsRemaining?: number;
+  lockedUntil?: string;
 }
 
 async function doveFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -47,7 +52,14 @@ async function doveFetch<T>(path: string, init?: RequestInit): Promise<T> {
     const message = Array.isArray(body.message)
       ? body.message.join(", ")
       : (body.message ?? res.statusText);
-    throw new DoveError(message, res.status, body.code);
+    // Dove may put these at the top level or under `data`; accept both.
+    const nested = (body.data ?? {}) as DoveEnvelope<unknown>;
+    const attemptsRemaining = body.attemptsRemaining ?? nested.attemptsRemaining;
+    const lockedUntil = body.lockedUntil ?? nested.lockedUntil;
+    throw new DoveError(message, res.status, body.code, {
+      ...(typeof attemptsRemaining === "number" ? { attemptsRemaining } : {}),
+      ...(typeof lockedUntil === "string" ? { lockedUntil } : {}),
+    });
   }
   return body.data as T;
 }
@@ -65,13 +77,40 @@ export function getProfile(token: string): Promise<ProfileBootstrap> {
   return doveFetch<ProfileBootstrap>(tokenPath(token));
 }
 
-export async function updateProfile(
+export function updateProfile(
   token: string,
   payload: UpdateProfilePayload,
-): Promise<PersonProfile> {
-  const data = await doveFetch<{ person: PersonProfile }>(tokenPath(token), {
+): Promise<UpdateProfileResult> {
+  return doveFetch<UpdateProfileResult>(tokenPath(token), {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
-  return data.person;
+}
+
+const bearer = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
+
+export function loginMember(payload: MemberLoginPayload): Promise<MemberLoginResult> {
+  return doveFetch<MemberLoginResult>("/profile/login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getMe(accessToken: string): Promise<MemberSession> {
+  return doveFetch<MemberSession>("/profile/me", { headers: bearer(accessToken) });
+}
+
+export async function setMemberPin(
+  accessToken: string,
+  payload: { currentPin?: string; newPin: string },
+): Promise<void> {
+  await doveFetch("/profile/me/pin", {
+    method: "PUT",
+    headers: bearer(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function logoutMember(accessToken: string): Promise<void> {
+  await doveFetch("/profile/logout", { method: "POST", headers: bearer(accessToken) });
 }

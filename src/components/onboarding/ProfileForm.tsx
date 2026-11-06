@@ -1,17 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { saveProfile } from "@/app/profile/[token]/actions";
 import { Button } from "@/components/ui/Button";
 import { ChurchHeader } from "@/components/ui/Brand";
 import { CheckCardGroup, PillRadioGroup, SelectableCardGroup } from "@/components/ui/Choice";
 import { TextArea, TextField } from "@/components/ui/Field";
-import { Collapse, StickyActionBar, Toast } from "@/components/ui/Misc";
+import { Collapse, StickyActionBar } from "@/components/ui/Misc";
 import { MEMBERSHIP_OPTIONS } from "@/lib/church";
 import { toInputValue } from "@/lib/phone";
-import type { LinkProblemCode, PersonProfile, ProfileBootstrap } from "@/lib/types";
+import type { ProfileBootstrap } from "@/lib/types";
 import {
   DEPARTMENTS_REQUIRED,
   profileSchemaFor,
@@ -29,21 +28,28 @@ function SectionTitle({ children }: { children: string }) {
   return <h2 className="font-serif text-xl font-semibold">{children}</h2>;
 }
 
+export interface FormFieldError {
+  field: keyof ProfileFormInput;
+  message: string;
+}
+
 export function ProfileForm({
-  token,
   data,
-  onSaved,
-  onLinkProblem,
+  draft,
+  initialError,
+  onContinue,
 }: {
-  token: string;
   data: ProfileBootstrap;
-  onSaved: (person: PersonProfile) => void;
-  onLinkProblem: (code: LinkProblemCode) => void;
+  /** What the member typed before, when they come back from a later step. */
+  draft?: ProfileFormInput;
+  /** A server-side field error to show on arrival (e.g. Dove wants a department). */
+  initialError?: FormFieldError;
+  /** Called with the validated form; saving happens after the PIN step. */
+  onContinue: (values: ProfileFormInput) => void;
 }) {
   const { person, availableDepartments } = data;
   const namesConfirmed = person.namesConfirmed !== false;
   const departmentsAvailable = availableDepartments.length > 0;
-  const [toast, setToast] = useState<string | null>(null);
 
   const schema = useMemo(() => profileSchemaFor({ departmentsAvailable }), [departmentsAvailable]);
 
@@ -53,11 +59,11 @@ export function ProfileForm({
     handleSubmit,
     setError,
     trigger,
-    formState: { errors, isSubmitting, isSubmitted },
+    formState: { errors, isSubmitted },
   } = useForm<ProfileFormInput>({
     resolver: zodResolver(schema),
     mode: "onTouched",
-    defaultValues: {
+    defaultValues: draft ?? {
       firstName: namesConfirmed ? person.firstName : "",
       lastName: namesConfirmed ? person.lastName : "",
       gender: person.gender ?? "",
@@ -74,23 +80,18 @@ export function ProfileForm({
   const departmentsRequired = DEPARTMENTS_REQUIRED.includes(status);
   const departmentsOpen = departmentsAvailable && showsDepartments(status);
 
-  const onSubmit = handleSubmit(async (values) => {
-    setToast(null);
-    const result = await saveProfile(token, values);
-    if (result.ok) return onSaved(result.person);
-    if (result.kind === "link") return onLinkProblem(result.code);
-    if (result.kind === "field") {
-      setError(result.field, { message: result.message }, { shouldFocus: true });
-      return;
+  useEffect(() => {
+    if (initialError) {
+      setError(initialError.field, { message: initialError.message }, { shouldFocus: true });
     }
-    setToast("Something went wrong. Please try again.");
-  });
+  }, [initialError, setError]);
+
+  const onSubmit = handleSubmit((values) => onContinue(values));
 
   const today = new Date().toISOString().slice(0, 10);
 
   return (
     <>
-      <Toast message={toast} onDismiss={() => setToast(null)} />
       <ChurchHeader />
 
       <div className="mt-6">
@@ -115,7 +116,7 @@ export function ProfileForm({
               label="First name"
               required
               autoComplete="given-name"
-              autoFocus={!namesConfirmed}
+              autoFocus={!namesConfirmed && !draft}
               error={errors.firstName?.message}
               {...register("firstName")}
             />
@@ -247,8 +248,8 @@ export function ProfileForm({
         </div>
 
         <StickyActionBar>
-          <Button type="submit" fullWidth loading={isSubmitting} loadingLabel="Saving…">
-            Save &amp; continue
+          <Button type="submit" fullWidth>
+            Continue
           </Button>
         </StickyActionBar>
       </form>

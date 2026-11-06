@@ -1,10 +1,18 @@
 import type { LinkProblemCode } from "./types";
 
+/** Extra fields Dove attaches to PIN errors. */
+export interface DoveErrorExtra {
+  attemptsRemaining?: number;
+  /** ISO timestamp. */
+  lockedUntil?: string;
+}
+
 export class DoveError extends Error {
   constructor(
     message: string,
     readonly status: number,
     readonly code?: string,
+    readonly extra: DoveErrorExtra = {},
   ) {
     super(message);
     this.name = "DoveError";

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateNewPin } from "./pin";
 import { toE164 } from "./phone";
 import type { MembershipStatus, UpdateProfilePayload } from "./types";
 
@@ -109,4 +110,62 @@ export function toUpdatePayload(values: ProfileValues): UpdateProfilePayload {
       ? values.departmentIds
       : [],
   };
+}
+
+const pinField = z
+  .string()
+  .refine((v) => /^\d{4}$/.test(v), "Please enter your 4-digit PIN.");
+
+const newPinField = z
+  .string()
+  .superRefine((v, ctx) => {
+    const message = validateNewPin(v);
+    if (message) ctx.addIssue({ code: "custom", message });
+  });
+
+/** Create-PIN form (onboarding step): a new PIN entered twice. */
+export const newPinSchema = z
+  .object({ pin: newPinField, confirmPin: z.string() })
+  .refine((v) => v.pin === v.confirmPin, {
+    path: ["confirmPin"],
+    message: "The PINs don't match. Please enter them again.",
+  });
+
+export type NewPinValues = z.infer<typeof newPinSchema>;
+
+/** Change-PIN form for a signed-in member. `currentPin` is only asked for when they already have one. */
+export function changePinSchemaFor({ hasPin }: { hasPin: boolean }) {
+  return z
+    .object({
+      currentPin: hasPin ? pinField : z.string(),
+      pin: newPinField,
+      confirmPin: z.string(),
+    })
+    .refine((v) => v.pin === v.confirmPin, {
+      path: ["confirmPin"],
+      message: "The PINs don't match. Please enter them again.",
+    });
+}
+
+export type ChangePinValues = { currentPin: string; pin: string; confirmPin: string };
+
+/** Phone or email, as typed on the login screen. */
+export const loginSchema = z.object({
+  identifier: z
+    .string()
+    .trim()
+    .min(1, "Please enter your phone number or email.")
+    .refine(
+      (v) => (v.includes("@") ? z.email().safeParse(v).success : toE164(v) !== null),
+      "That doesn't look like a phone number or email. Please check it.",
+    ),
+  pin: pinField,
+});
+
+export type LoginValues = z.infer<typeof loginSchema>;
+
+/** Dove accepts either form; we send E.164 phones and lower-cased emails. */
+export function toIdentifier(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.includes("@") ? trimmed.toLowerCase() : (toE164(trimmed) ?? trimmed);
 }

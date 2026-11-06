@@ -30,6 +30,8 @@ export interface PersonProfile {
   departments: DepartmentInfo[];
   /** False when Dove created this record from an unknown email (placeholder names like "New Visitor"). */
   namesConfirmed: boolean;
+  /** Whether the member has set a PIN for signing in on other devices. */
+  hasPin: boolean;
 }
 
 export interface ChurchInfo {
@@ -62,9 +64,45 @@ export interface UpdateProfilePayload {
   address?: string;
   membershipStatus: MembershipStatus;
   departmentIds: string[];
+  /** 4-digit numeric PIN; omitted when the member skips the PIN step. */
+  pin?: string;
+}
+
+export interface UpdateProfileResult {
+  person: PersonProfile;
+  /** Present when the save also signs the member in (they have a PIN). */
+  accessToken?: string;
+}
+
+export interface MemberLoginPayload {
+  /** Phone (E.164) or email. */
+  identifier: string;
+  pin: string;
+  churchSlug?: string;
+}
+
+export interface MemberSession {
+  person: PersonProfile;
+  church: ChurchInfo;
+}
+
+export interface MemberLoginResult extends MemberSession {
+  accessToken: string;
 }
 
 export type LinkProblemCode = "PROFILE_LINK_EXPIRED" | "PROFILE_LINK_INVALID";
 
 /** Machine-readable `code` on Dove's 400 responses. Switch on this, not `message`. */
-export type ProfileErrorCode = LinkProblemCode | "NAMES_REQUIRED" | "DEPARTMENT_REQUIRED";
+export type ProfileErrorCode =
+  | LinkProblemCode
+  | "NAMES_REQUIRED"
+  | "DEPARTMENT_REQUIRED"
+  | "PIN_TOO_WEAK";
+
+/** Codes on the member PIN endpoints (login and change PIN). */
+export type PinErrorCode =
+  | "INVALID_PIN"
+  | "PIN_LOCKED"
+  | "NO_PIN_SET"
+  | "INVALID_CREDENTIALS"
+  | "PIN_TOO_WEAK";

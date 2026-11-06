@@ -1,9 +1,9 @@
 // Minimal service worker: offline fallback + cached static assets.
-// Profile pages and server actions carry personal data and secure tokens, so
-// they are never cached.
-const VERSION = "v1";
+// Profile pages, the home page (it shows the signed-in member's details) and
+// server actions carry personal data and secure tokens, so they are never cached.
+const VERSION = "v2";
 const STATIC_CACHE = `static-${VERSION}`;
-const PAGES_CACHE = `pages-${VERSION}`;
+const PAGES_CACHE = `pages-${VERSION}`; // kept so old page caches get purged on activate
 const PRECACHE = ["/offline.html", "/brand/icon-gold.png", "/icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {
@@ -31,31 +31,15 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
-  const isProfile = url.pathname.startsWith("/profile");
+  const isPrivate = url.pathname.startsWith("/profile") || url.pathname === "/";
 
   if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Only the public home page is kept for offline use.
-          if (url.pathname === "/" && response.ok) {
-            const copy = response.clone();
-            caches.open(PAGES_CACHE).then((cache) => cache.put("/", copy));
-          }
-          return response;
-        })
-        .catch(async () => {
-          if (!isProfile) {
-            const home = url.pathname === "/" ? await caches.match("/") : undefined;
-            if (home) return home;
-          }
-          return caches.match("/offline.html");
-        }),
-    );
+    // Pages are never cached: navigations fall back to the offline screen.
+    event.respondWith(fetch(request).catch(() => caches.match("/offline.html")));
     return;
   }
 
-  if (isProfile) return;
+  if (isPrivate) return;
 
   // Hashed build assets never change: cache-first.
   if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/brand/") || url.pathname.startsWith("/icons/")) {
