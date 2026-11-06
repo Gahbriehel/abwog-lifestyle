@@ -158,7 +158,8 @@ test.describe("PIN setup", () => {
     await expect(page.getByRole("heading", { name: "You're all set, John!" })).toBeVisible();
 
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Hello, John" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Hello Amazing John," })).toBeVisible();
+    await page.goto("/account");
     await expect(page.getByRole("heading", { name: "Change your PIN" })).toBeVisible();
   });
 
@@ -168,7 +169,8 @@ test.describe("PIN setup", () => {
     await expect(page.getByRole("heading", { name: "You're all set, John!" })).toBeVisible();
 
     await page.goto("/");
-    await expect(page.getByRole("link", { name: "Sign in with PIN" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Hello Amazing," })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Sign in" })).toBeVisible();
   });
 
   test("back returns to the details with everything still filled in", async ({ page }) => {
@@ -190,21 +192,22 @@ test.describe("login", () => {
 
   test("signs in with email and PIN, then signs out", async ({ page }) => {
     await signIn(page, "sarah.adeyemi@example.com", "4729");
-    await expect(page.getByRole("heading", { name: "Hello, Sarah" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Hello Amazing Sarah," })).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
+    await page.goto("/account");
     const details = page.getByRole("region", { name: "Your details" });
     await expect(details.getByText("Media & Tech")).toBeVisible();
 
     await page.getByRole("button", { name: "Sign out" }).click();
-    await expect(page.getByRole("link", { name: "Sign in with PIN" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Sign in" })).toBeVisible();
     // The session is gone: a reload stays signed out.
     await page.reload();
-    await expect(page.getByRole("link", { name: "Sign in with PIN" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Sign in" })).toBeVisible();
   });
 
   test("signs in with a local phone number", async ({ page }) => {
     await signIn(page, "0803 456 7890", "4729");
-    await expect(page.getByRole("heading", { name: "Hello, Sarah" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Hello Amazing Sarah," })).toBeVisible();
   });
 
   test("shows attempts remaining for a wrong PIN and clears the PIN", async ({ page }) => {
@@ -254,7 +257,9 @@ test.describe("change PIN when signed in", () => {
     await page.getByLabel("Phone number or email").fill("sarah.adeyemi@example.com");
     await page.getByLabel("PIN", { exact: true }).fill("4729");
     await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Hello Amazing Sarah," })).toBeVisible();
 
+    await page.goto("/account");
     await page.getByRole("button", { name: "Change your PIN" }).click();
     await page.getByLabel("Current PIN").fill("0000");
     await page.getByLabel("New PIN", { exact: true }).fill("8153");
@@ -272,6 +277,6 @@ test("signed-out home page offers sign in, the profile update and install card",
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Welcome to Amazing Grace" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Update my details" })).toHaveAttribute("href", "/profile");
-  await expect(page.getByRole("link", { name: "Sign in with PIN" })).toHaveAttribute("href", "/login");
+  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   await expect(page.getByRole("heading", { name: "Stay connected" })).toBeVisible();
 });

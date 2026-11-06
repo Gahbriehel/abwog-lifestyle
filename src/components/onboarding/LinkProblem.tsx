@@ -22,7 +22,7 @@ export function LinkProblem({ code }: { code: LinkProblemCode }) {
       <ChurchHeader />
       <div className="mt-12 flex flex-col items-center text-center">
         <IconCircle>{code === "PROFILE_LINK_EXPIRED" ? <Clock /> : <Link2Off />}</IconCircle>
-        <h1 className="mt-6 font-serif text-[26px] font-semibold leading-tight">{title}</h1>
+        <h1 className="mt-6 type-title">{title}</h1>
         <p className="mt-2 text-balance text-fg-muted">{body}</p>
         <p className="mt-4 text-balance text-fg-muted">
           Don&apos;t worry, your details are safe. Getting a new link only takes a moment.

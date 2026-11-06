@@ -56,7 +56,7 @@ export default async function ProfileTokenPage({
           <IconCircle>
             <WifiOff />
           </IconCircle>
-          <h1 className="mt-6 font-serif text-[26px] font-semibold leading-tight">
+          <h1 className="mt-6 type-title">
             We couldn&apos;t load your details
           </h1>
           <p className="mt-2 text-balance text-fg-muted">

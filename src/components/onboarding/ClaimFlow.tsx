@@ -69,7 +69,7 @@ function ClaimForm({ defaultEmail, onSent }: { defaultEmail: string; onSent: (em
   return (
     <>
       <ChurchHeader variant="full" />
-      <h1 className="mt-8 text-balance text-center font-serif text-[28px] font-semibold leading-tight">
+      <h1 className="mt-8 type-title text-center">
         Welcome! Let&apos;s update your details
       </h1>
       <p className="mt-2 text-balance text-center text-fg-muted">
@@ -153,7 +153,7 @@ function CheckEmail({
         <IconCircle>
           <Mail />
         </IconCircle>
-        <h1 className="mt-6 font-serif text-[26px] font-semibold leading-tight">Check your email</h1>
+        <h1 className="mt-6 type-title">Check your email</h1>
         <p className="mt-3 text-balance text-fg-muted">
           If we have your details, we&apos;ve sent a secure link to{" "}
           <strong className="text-fg">{maskEmail(email)}</strong>. It expires in 30 minutes.

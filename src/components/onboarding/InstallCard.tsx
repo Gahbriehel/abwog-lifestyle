@@ -17,7 +17,7 @@ function CardShell({ children }: { children: ReactNode }) {
         <span className="inline-flex size-12 items-center justify-center rounded-xl bg-logo-bg">
           <Image src="/brand/icon-gold.png" alt="" width={32} height={26} />
         </span>
-        <h2 id="install-title" className="font-serif text-xl font-semibold text-primary-soft-fg">
+        <h2 id="install-title" className="type-heading text-primary-soft-fg">
           Stay connected
         </h2>
       </div>

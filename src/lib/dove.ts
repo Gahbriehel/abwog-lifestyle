@@ -1,10 +1,15 @@
 import "server-only";
 import { DoveError } from "./dove-errors";
 import type {
+  EventList,
+  EventSummary,
+  GivingAccount,
   MemberLoginPayload,
   MemberLoginResult,
   MemberSession,
   ProfileBootstrap,
+  RegisterPayload,
+  RegisterResult,
   UpdateProfilePayload,
   UpdateProfileResult,
 } from "./types";
@@ -24,6 +29,7 @@ interface DoveEnvelope<T> {
   data?: T;
   attemptsRemaining?: number;
   lockedUntil?: string;
+  registration?: unknown;
 }
 
 async function doveFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -56,7 +62,9 @@ async function doveFetch<T>(path: string, init?: RequestInit): Promise<T> {
     const nested = (body.data ?? {}) as DoveEnvelope<unknown>;
     const attemptsRemaining = body.attemptsRemaining ?? nested.attemptsRemaining;
     const lockedUntil = body.lockedUntil ?? nested.lockedUntil;
+    const registration = body.registration ?? nested.registration;
     throw new DoveError(message, res.status, body.code, {
+      ...(registration && typeof registration === "object" ? { registration } : {}),
       ...(typeof attemptsRemaining === "number" ? { attemptsRemaining } : {}),
       ...(typeof lockedUntil === "string" ? { lockedUntil } : {}),
     });
@@ -114,4 +122,29 @@ export async function setMemberPin(
 
 export async function logoutMember(accessToken: string): Promise<void> {
   await doveFetch("/profile/logout", { method: "POST", headers: bearer(accessToken) });
+}
+
+// ── Public content (no session needed) ─────────────────────────────────────
+
+export function getEvents(query: { limit?: number; category?: string; search?: string } = {}): Promise<EventList> {
+  const params = new URLSearchParams({ limit: String(query.limit ?? 50) });
+  if (query.category) params.set("category", query.category);
+  if (query.search) params.set("search", query.search);
+  return doveFetch<EventList>(`/events?${params}`);
+}
+
+export function getEvent(id: string): Promise<EventSummary> {
+  return doveFetch<EventSummary>(`/events/${encodeURIComponent(id)}`);
+}
+
+export function registerForEvent(id: string, payload: RegisterPayload): Promise<RegisterResult> {
+  return doveFetch<RegisterResult>(`/events/${encodeURIComponent(id)}/register`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Public, active accounts only, already sorted. See docs/dove-giving-accounts.md. */
+export function getGivingAccounts(): Promise<GivingAccount[]> {
+  return doveFetch<GivingAccount[]>("/giving-accounts");
 }

@@ -62,7 +62,7 @@ function WhatsAppCard({ name, phone, website }: { name: string; phone: string; w
           <MessageCircle className="size-5" />
         </span>
         <div>
-          <h2 id="whatsapp-title" className="font-serif text-lg font-semibold leading-tight">
+          <h2 id="whatsapp-title" className="type-card">
             Save our WhatsApp number
           </h2>
           <p className="text-sm text-fg-muted">{formatForDisplay(phone)}</p>
@@ -110,7 +110,7 @@ export function SuccessView({
       <ChurchHeader />
       <Celebration />
       <div className="mt-6 text-center">
-        <h1 className="font-serif text-[28px] font-semibold leading-tight">
+        <h1 className="type-title">
           You&apos;re all set, {person.firstName}!
         </h1>
         <p className="mt-2 text-balance text-fg-muted">
@@ -125,7 +125,7 @@ export function SuccessView({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm text-fg-muted">Your details</p>
-            <p className="mt-0.5 break-words font-serif text-xl font-semibold">
+            <p className="mt-0.5 break-words type-heading">
               {person.firstName} {person.lastName}
             </p>
           </div>

@@ -55,7 +55,7 @@ export function PinSetupStep({
         <IconCircle>
           <KeyRound />
         </IconCircle>
-        <h1 className="mt-6 font-serif text-[26px] font-semibold leading-tight">
+        <h1 className="mt-6 type-title">
           {hasPin ? "Choose a new PIN" : "Create a 4-digit PIN"}
         </h1>
         <p className="mt-2 text-balance text-fg-muted">

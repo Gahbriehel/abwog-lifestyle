@@ -25,7 +25,7 @@ const GENDER_OPTIONS = [
 ] as const;
 
 function SectionTitle({ children }: { children: string }) {
-  return <h2 className="font-serif text-xl font-semibold">{children}</h2>;
+  return <h2 className="type-heading">{children}</h2>;
 }
 
 export interface FormFieldError {
@@ -95,7 +95,7 @@ export function ProfileForm({
       <ChurchHeader />
 
       <div className="mt-6">
-        <h1 className="font-serif text-[28px] font-semibold leading-tight">
+        <h1 className="type-title">
           {namesConfirmed ? `Hi ${person.firstName}` : "Welcome!"}{" "}
           <span aria-hidden>👋</span>
         </h1>

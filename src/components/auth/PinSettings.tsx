@@ -62,7 +62,7 @@ export function PinSettings({ hasPin }: { hasPin: boolean }) {
           <KeyRound className="size-5" />
         </span>
         <div>
-          <h2 id="pin-title" className="font-serif text-lg font-semibold leading-tight">
+          <h2 id="pin-title" className="type-card">
             {title}
           </h2>
           <p className="text-sm text-fg-muted">

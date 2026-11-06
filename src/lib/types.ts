@@ -109,3 +109,71 @@ export type PinErrorCode =
   | "INVALID_CREDENTIALS"
   | "CURRENT_PIN_REQUIRED"
   | "PIN_TOO_WEAK";
+
+// ── Public content (events, registration, giving) ──────────────────────────
+
+export type EventCategory =
+  | "GENERAL"
+  | "CONFERENCE"
+  | "VIGIL"
+  | "COMMUNION"
+  | "REVIVAL"
+  | "WORSHIP"
+  | "OUTREACH";
+
+export interface EventSummary {
+  id: string;
+  title: string;
+  description: string | null;
+  category: EventCategory;
+  location: string | null;
+  /** ISO timestamps. */
+  startDate: string;
+  endDate: string;
+  imageUrl: string | null;
+  capacity: number | null;
+  requiresRegistration: boolean;
+  isFeatured: boolean;
+  highlights: string[] | null;
+  registeredCount?: number;
+}
+
+export interface EventList {
+  items: EventSummary[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
+}
+
+export interface RegisterPayload {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  /** E.164 (Dove normalises and silently drops numbers it can't parse). */
+  phone?: string;
+  gender?: Gender;
+}
+
+export interface EventRegistration {
+  id: string;
+  registrationNumber: string;
+  /** The token encoded in the QR code. */
+  token: string;
+  /** PNG data URL of the check-in QR code. */
+  qrCodeDataUrl: string;
+  team?: { id: string; name: string; color?: string | null } | null;
+}
+
+export interface RegisterResult {
+  registration: EventRegistration;
+}
+
+export interface GivingAccount {
+  id: string;
+  /** What the money is for, e.g. "Tithe" or "Building project". */
+  label: string;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  currency: string;
+  note: string | null;
+  sortOrder: number;
+}

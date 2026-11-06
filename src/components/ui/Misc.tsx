@@ -8,7 +8,7 @@ export function Badge({ children, tone = "gold" }: { children: ReactNode; tone?:
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-semibold",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
         tone === "gold" ? "bg-gold-soft text-gold" : "bg-primary-soft text-primary-soft-fg",
       )}
     >
@@ -19,7 +19,7 @@ export function Badge({ children, tone = "gold" }: { children: ReactNode; tone?:
 
 export function Chip({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-primary-soft px-3 py-1 text-sm font-medium text-primary-soft-fg">
+    <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-1 text-[13px] font-medium text-primary-soft-fg">
       {children}
     </span>
   );
@@ -46,7 +46,7 @@ export function Collapse({ open, children }: { open: boolean; children: ReactNod
 
 export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-5 mt-8 border-t border-border bg-bg/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+    <div className="sticky bottom-0 z-10 -mx-5 mt-8 border-t border-border bg-bg/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
       {children}
     </div>
   );

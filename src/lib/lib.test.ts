@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DoveError, toLinkProblem } from "./dove-errors";
+import { formatEventWhen, greeting, registrationState, upcoming } from "./events";
 import { detectInstallContext } from "./install";
 import { maskEmail } from "./mask";
 import { isWeakPin, validateNewPin } from "./pin";
@@ -10,7 +11,9 @@ import {
   newPinSchema,
   profileSchema,
   profileSchemaFor,
+  registerSchema,
   toIdentifier,
+  toRegisterPayload,
   toUpdatePayload,
   type ProfileFormInput,
 } from "./validation";
@@ -266,5 +269,87 @@ describe("login form", () => {
   it("sends phones as E.164 and emails lower-cased", () => {
     expect(toIdentifier(" 0803 456 7890 ")).toBe("+2348034567890");
     expect(toIdentifier("Sarah.Adeyemi@Example.com")).toBe("sarah.adeyemi@example.com");
+  });
+});
+
+describe("events helpers", () => {
+  const now = new Date("2026-11-06T12:00:00Z");
+  const ev = (id: string, startDate: string, endDate: string) => ({ id, startDate, endDate });
+
+  it("formats a same-day range in Lagos time", () => {
+    expect(formatEventWhen("2026-11-08T08:00:00Z", "2026-11-08T11:00:00Z")).toBe("Sun, 8 Nov 2026 · 9:00 am – 12:00 pm");
+  });
+
+  it("formats a multi-day range", () => {
+    expect(formatEventWhen("2026-11-20T17:00:00Z", "2026-11-22T17:00:00Z")).toBe(
+      "Fri, 20 Nov 2026 · 6:00 pm – Sun, 22 Nov 2026 · 6:00 pm",
+    );
+  });
+
+  it("keeps upcoming events, soonest first, and drops ended ones", () => {
+    const list = [
+      ev("later", "2026-12-01T10:00:00Z", "2026-12-01T12:00:00Z"),
+      ev("ended", "2026-10-01T10:00:00Z", "2026-10-01T12:00:00Z"),
+      ev("soon", "2026-11-07T10:00:00Z", "2026-11-07T12:00:00Z"),
+      ev("now", "2026-11-06T10:00:00Z", "2026-11-06T14:00:00Z"),
+    ];
+    expect(upcoming(list, now).map((e) => e.id)).toEqual(["now", "soon", "later"]);
+  });
+
+  it("derives the registration state", () => {
+    const base = {
+      id: "1",
+      title: "t",
+      description: null,
+      category: "GENERAL" as const,
+      location: null,
+      startDate: "2026-12-01T10:00:00Z",
+      endDate: "2026-12-01T12:00:00Z",
+      imageUrl: null,
+      capacity: null,
+      requiresRegistration: true,
+      isFeatured: false,
+      highlights: null,
+    };
+    expect(registrationState(base, now)).toBe("open");
+    expect(registrationState({ ...base, requiresRegistration: false }, now)).toBe("not-required");
+    expect(registrationState({ ...base, capacity: 10, registeredCount: 10 }, now)).toBe("full");
+    expect(registrationState({ ...base, capacity: 10, registeredCount: 9 }, now)).toBe("open");
+    expect(registrationState({ ...base, endDate: "2026-11-01T00:00:00Z" }, now)).toBe("ended");
+  });
+
+  it("greets guests and members", () => {
+    expect(greeting("Amazing")).toBe("Hello Amazing,");
+    expect(greeting("Amazing", "Sarah")).toBe("Hello Amazing Sarah,");
+  });
+});
+
+describe("registerSchema", () => {
+  const base = { firstName: "Ada", lastName: "Obi", email: "", phone: "" };
+
+  it("needs an email or a phone", () => {
+    const result = registerSchema.safeParse(base);
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toBe("Please enter an email address or a phone number.");
+  });
+
+  it("accepts either one alone", () => {
+    expect(registerSchema.safeParse({ ...base, email: "ada@example.com" }).success).toBe(true);
+    expect(registerSchema.safeParse({ ...base, phone: "0803 456 7890" }).success).toBe(true);
+  });
+
+  it("rejects a bad email or phone", () => {
+    expect(registerSchema.safeParse({ ...base, email: "nope" }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...base, phone: "123" }).success).toBe(false);
+  });
+
+  it("builds the payload with E.164 phone and lowercase email", () => {
+    const values = registerSchema.parse({ ...base, email: "Ada@Example.com", phone: "0803 456 7890" });
+    expect(toRegisterPayload(values)).toEqual({
+      firstName: "Ada",
+      lastName: "Obi",
+      email: "ada@example.com",
+      phone: "+2348034567890",
+    });
   });
 });

@@ -5,6 +5,8 @@ export interface DoveErrorExtra {
   attemptsRemaining?: number;
   /** ISO timestamp. */
   lockedUntil?: string;
+  /** On a 409 from event registration: the registration the person already has. */
+  registration?: unknown;
 }
 
 export class DoveError extends Error {

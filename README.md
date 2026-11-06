@@ -2,7 +2,12 @@
 
 The member-facing Progressive Web App for **Abiding Word Of Grace Missions** (PKA Amazing Grace Bible Church), served at **https://app.abwog.org**.
 
-What members can do today:
+What anyone can do, without signing in:
+- See what's coming up on the home page and the **Events** tab, open an event and **register** for it (they get a check-in QR code).
+- Open **Give** (from the menu or the home page) to see the church's bank accounts and copy an account number.
+
+What members can do:
+- Sign in with a PIN; the greeting, account tab and event registration form adapt.
 - Scan the foyer QR code and request a secure link by email.
 - Check and update their details: personal info, contact, role at church, departments.
 - Save the church WhatsApp number.
@@ -13,6 +18,7 @@ Later phases add updates, devotionals and events to the same installed app.
 All data lives in the **Dove** API (`../dove`, deployed at `https://api.abwog.org`). This app has no database of its own. Server Components and Server Actions call Dove, so the browser never talks to the API directly.
 
 - Plan: [docs/implementation-plan.md](docs/implementation-plan.md)
+- Backend work for giving: [docs/dove-giving-accounts.md](docs/dove-giving-accounts.md)
 - Backend work this app depends on: Part A of `dove/docs/PHASE2_MESSAGING_AND_PROFILE_IMPLEMENTATION.md`
 - Church WhatsApp setup: [docs/whatsapp-business-setup.md](docs/whatsapp-business-setup.md)
 
@@ -34,6 +40,9 @@ The stub prints the "emailed" link when you request one. You can also open these
 | `/profile/leader-no-dept` | Leader, departments optional |
 | `/profile/expired-link` | Expired link screen |
 | `/profile/anything-else` | Invalid or used link screen |
+| `/events`, `/events/event-youth` | Public events (also `event-sunday` no registration, `event-full`, `event-ended`) |
+| `/events/event-youth/register` | Register; email `dupe@example.com` → "already registered", first name `Fail` → error |
+| `/give` | Three giving accounts (NGN, NGN, USD) |
 
 Enter the first name **Fail** and save to see the error toast.
 

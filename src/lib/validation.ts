@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { validateNewPin } from "./pin";
 import { toE164 } from "./phone";
-import type { MembershipStatus, UpdateProfilePayload } from "./types";
+import type { MembershipStatus, RegisterPayload, UpdateProfilePayload } from "./types";
 
 export const claimSchema = z.object({
   email: z
@@ -168,4 +168,38 @@ export type LoginValues = z.infer<typeof loginSchema>;
 export function toIdentifier(value: string): string {
   const trimmed = value.trim();
   return trimmed.includes("@") ? trimmed.toLowerCase() : (toE164(trimmed) ?? trimmed);
+}
+
+/** Event registration: Dove needs a name plus an email or a phone number. */
+export const registerSchema = z
+  .object({
+    firstName: z.string().trim().min(1, "Please enter your first name.").max(100, "That's a bit long. Please shorten it."),
+    lastName: z.string().trim().min(1, "Please enter your last name.").max(100, "That's a bit long. Please shorten it."),
+    email: z
+      .string()
+      .trim()
+      .max(255, "That email address is too long.")
+      .refine((v) => v === "" || z.email().safeParse(v).success, "Please enter a valid email address."),
+    phone: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || toE164(v) !== null, "That number doesn't look right. Please check it."),
+  })
+  .superRefine((values, ctx) => {
+    if (values.email === "" && values.phone === "") {
+      const message = "Please enter an email address or a phone number.";
+      ctx.addIssue({ code: "custom", path: ["email"], message });
+    }
+  });
+
+export type RegisterValues = z.infer<typeof registerSchema>;
+
+export function toRegisterPayload(values: RegisterValues): RegisterPayload {
+  const phone = values.phone ? toE164(values.phone) : null;
+  return {
+    firstName: values.firstName,
+    lastName: values.lastName,
+    ...(values.email ? { email: values.email.toLowerCase() } : {}),
+    ...(phone ? { phone } : {}),
+  };
 }

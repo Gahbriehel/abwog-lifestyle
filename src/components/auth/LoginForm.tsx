@@ -47,7 +47,7 @@ export function LoginForm() {
   return (
     <>
       <ChurchHeader variant="full" />
-      <h1 className="mt-8 text-balance text-center font-serif text-[28px] font-semibold leading-tight">
+      <h1 className="mt-8 type-title text-center">
         Welcome back
       </h1>
       <p className="mt-2 text-balance text-center text-fg-muted">

@@ -28,8 +28,8 @@ export function ChurchHeader({ variant = "compact" }: { variant?: "full" | "comp
   if (variant === "full") {
     return (
       <header className="flex flex-col items-center text-center">
-        <ChurchLogo size={68} />
-        <p className="mt-4 text-balance font-serif text-xl font-semibold leading-tight">
+        <ChurchLogo size={60} />
+        <p className="mt-4 text-balance font-serif text-lg font-semibold leading-tight">
           {church.name}
         </p>
         <p className="mt-1 text-sm text-fg-muted">({church.formerName})</p>
@@ -39,7 +39,7 @@ export function ChurchHeader({ variant = "compact" }: { variant?: "full" | "comp
   return (
     <header className="flex items-center gap-3 border-b border-border pb-4">
       <ChurchLogo size={36} />
-      <p className="font-serif text-[17px] font-semibold leading-tight">{church.name}</p>
+      <p className="font-serif text-base font-semibold leading-tight">{church.name}</p>
     </header>
   );
 }

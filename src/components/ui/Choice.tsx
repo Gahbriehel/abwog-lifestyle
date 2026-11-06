@@ -130,7 +130,7 @@ export function SelectableCardGroup<T extends string>({
       ref={ref}
       id={id}
       legend={legend}
-      legendClassName="font-serif text-xl font-semibold"
+      legendClassName="type-heading"
       description={description}
       error={error}
     >

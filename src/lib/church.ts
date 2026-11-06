@@ -4,6 +4,8 @@ export const church = {
   name: "Abiding Word Of Grace Missions",
   formerName: "PKA Amazing Grace Bible Church",
   shortName: "Amazing Grace",
+  /** What the community is called in greetings: "Hello Amazing", "Hello Amazing Sarah". */
+  greetingName: "Amazing",
   /** Sent to Dove on PIN login to pick the church. */
   slug: "abwog",
   websiteUrl: "https://abwog.org",

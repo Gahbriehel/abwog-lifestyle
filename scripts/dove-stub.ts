@@ -20,6 +20,13 @@
 //   anything else                             INVALID_CREDENTIALS
 // A wrong PIN always answers "4 attempts remaining" (the stub keeps no lockout state).
 // Sessions are in memory: GET /profile/me, PUT /profile/me/pin, POST /profile/logout.
+//
+// Public content (dates are relative to when the stub starts, so they are always upcoming):
+//   GET  /events (?category, ?search, ?page, ?limit)   published events, past ones included like Dove
+//   GET  /events/:id
+//   POST /events/:id/register   dupe@example.com → 409 with the existing registration
+//                               first name "Fail" → 500; events event-full / event-ended / event-sunday → 400
+//   GET  /giving-accounts       active accounts, sorted (see docs/dove-giving-accounts.md)
 
 const PORT = Number(process.env.STUB_PORT ?? 4010);
 const APP = process.env.APP_ORIGIN ?? "http://localhost:3100";
@@ -91,6 +98,120 @@ const people: Record<string, Person> = {
     hasPin: false,
   },
 };
+
+const DAY = 86_400_000;
+const at = (days: number, hour: number, durationHours = 2) => {
+  const start = new Date(Date.now() + days * DAY);
+  start.setUTCHours(hour, 0, 0, 0);
+  return { startDate: start.toISOString(), endDate: new Date(start.getTime() + durationHours * 3_600_000).toISOString() };
+};
+
+const baseEvent = {
+  imageUrl: null,
+  capacity: null,
+  requiresRegistration: true,
+  isFeatured: false,
+  highlights: null,
+  registeredCount: 12,
+};
+
+const events = [
+  {
+    ...baseEvent,
+    id: "event-youth",
+    title: "Youth Conference 2026",
+    description: "Three days of worship, teaching and games for young people.\n\nBring a friend!",
+    category: "CONFERENCE",
+    location: "Main Auditorium, 14 Faith Avenue, Ikeja",
+    ...at(14, 17, 48),
+    isFeatured: true,
+    capacity: 500,
+    highlights: ["Live worship", "Team games and leaderboard", "Career clinic"],
+  },
+  {
+    ...baseEvent,
+    id: "event-vigil",
+    title: "Night of Encounter",
+    description: "An all-night prayer vigil.",
+    category: "VIGIL",
+    location: "Main Auditorium",
+    ...at(5, 21, 8),
+  },
+  {
+    ...baseEvent,
+    id: "event-sunday",
+    title: "Sunday Celebration Service",
+    description: "Join us every Sunday. No registration needed.",
+    category: "WORSHIP",
+    location: "Main Auditorium",
+    ...at(3, 8, 3),
+    requiresRegistration: false,
+  },
+  {
+    ...baseEvent,
+    id: "event-full",
+    title: "Leaders' Retreat",
+    description: "A retreat for church leaders. All places are taken.",
+    category: "GENERAL",
+    location: "Retreat Centre, Ibadan",
+    ...at(30, 9, 30),
+    capacity: 40,
+    registeredCount: 40,
+  },
+  {
+    ...baseEvent,
+    id: "event-ended",
+    title: "Easter Outreach",
+    description: "Thank you to everyone who joined.",
+    category: "OUTREACH",
+    location: "Community Hall",
+    ...at(-20, 10, 4),
+  },
+];
+
+const givingAccounts = [
+  {
+    id: "give-tithe",
+    label: "Tithes & Offerings",
+    bankName: "GTBank",
+    accountName: "Abiding Word Of Grace Missions",
+    accountNumber: "0123456789",
+    currency: "NGN",
+    note: "Use your name and the purpose as the transfer narration.",
+    sortOrder: 0,
+  },
+  {
+    id: "give-building",
+    label: "Building Project",
+    bankName: "Zenith Bank",
+    accountName: "Abiding Word Of Grace Missions (Building)",
+    accountNumber: "1012345678",
+    currency: "NGN",
+    note: null,
+    sortOrder: 1,
+  },
+  {
+    id: "give-usd",
+    label: "Missions (USD)",
+    bankName: "Zenith Bank",
+    accountName: "Abiding Word Of Grace Missions",
+    accountNumber: "5012345678",
+    currency: "USD",
+    note: "For gifts from outside Nigeria.",
+    sortOrder: 2,
+  },
+];
+
+const registrationFor = (n: number) => ({
+  id: `reg-${n}`,
+  registrationNumber: `REG-2026-${String(n).padStart(4, "0")}`,
+  token: `stub-token-${n}`,
+  // 1x1 transparent-ish PNG stands in for the QR code.
+  qrCodeDataUrl:
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  team: { id: "team-1", name: "Team Grace", color: "#5B2C5E" },
+});
+let registrationCount = 100;
 
 const VALID_PIN = "4729";
 
@@ -229,6 +350,63 @@ Bun.serve({
       return ok({ message: "Signed out" }, "Signed out");
     }
 
+    if (req.method === "GET" && url.pathname === "/api/v1/events") {
+      const category = url.searchParams.get("category");
+      const search = url.searchParams.get("search")?.toLowerCase();
+      const page = Number(url.searchParams.get("page") ?? 1);
+      const limit = Number(url.searchParams.get("limit") ?? 10);
+      const filtered = events
+        .filter((e) => !category || e.category === category)
+        .filter((e) => !search || `${e.title} ${e.description}`.toLowerCase().includes(search))
+        .sort((a, b) => a.startDate.localeCompare(b.startDate));
+      const items = filtered.slice((page - 1) * limit, page * limit);
+      return ok(
+        { items, meta: { total: filtered.length, page, limit, totalPages: Math.ceil(filtered.length / limit) } },
+        "List of events retrieved successfully",
+      );
+    }
+
+    const eventMatch = url.pathname.match(/^\/api\/v1\/events\/([^/]+)(\/register)?$/);
+    if (eventMatch) {
+      const event = events.find((e) => e.id === decodeURIComponent(eventMatch[1]));
+      if (!event) return fail(404, `Event with ID "${eventMatch[1]}" not found`);
+
+      if (req.method === "GET" && !eventMatch[2]) return ok(event, "Event details retrieved successfully");
+
+      if (req.method === "POST" && eventMatch[2]) {
+        const body = (await req.json()) as { firstName?: string; email?: string; phone?: string };
+        if (!body.email && !body.phone) return fail(400, "Either email or phone must be provided");
+        if (body.firstName === "Fail") return fail(500, "Internal server error");
+        if (!event.requiresRegistration) return fail(400, "Registration is not required for this event.");
+        if (event.endDate < new Date().toISOString()) {
+          return fail(400, "Registration is closed for this event because it has already ended.");
+        }
+        if (event.capacity != null && event.registeredCount >= event.capacity) {
+          return fail(400, "Registration is closed because this event has reached capacity.");
+        }
+        if (body.email === "dupe@example.com") {
+          // Nest's ConflictException(object) sends the object as the body.
+          return Response.json(
+            { statusCode: 409, message: "Attendee has already registered for this event", registration: registrationFor(7) },
+            { status: 409 },
+          );
+        }
+        return Response.json(
+          {
+            success: true,
+            message: "Registration successful",
+            data: { message: "Registration successful", registration: registrationFor(++registrationCount) },
+            timestamp: new Date().toISOString(),
+          },
+          { status: 201 },
+        );
+      }
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/v1/giving-accounts") {
+      return ok([...givingAccounts].sort((a, b) => a.sortOrder - b.sortOrder), "Giving accounts retrieved successfully");
+    }
+
     if (match && req.method === "GET") {
       const person = resolve(decodeURIComponent(match[1]));
       if (person instanceof Response) return person;
@@ -267,4 +445,5 @@ Bun.serve({
 });
 
 console.log(`Dove stub listening on http://localhost:${PORT}/api/v1`);
+console.log(`Public: ${APP}/ · /events · /events/event-youth · /give`);
 console.log(`Try: ${APP}/profile/member-sarah · /profile/new-visitor · /profile/expired-link · /profile/used`);
