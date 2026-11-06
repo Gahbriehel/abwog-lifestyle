@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone staff tool with its own dependencies; see tools/confession-audio/README.md.
+    "tools/**",
   ]),
 ]);
 

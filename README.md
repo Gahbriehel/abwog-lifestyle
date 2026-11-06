@@ -19,6 +19,7 @@ All data lives in the **Dove** API (`../dove`, deployed at `https://api.abwog.or
 
 - Plan: [docs/implementation-plan.md](docs/implementation-plan.md)
 - Backend work for giving: [docs/dove-giving-accounts.md](docs/dove-giving-accounts.md)
+- Backend work for confessions: [docs/dove-confessions.md](docs/dove-confessions.md)
 - Backend work this app depends on: Part A of `dove/docs/PHASE2_MESSAGING_AND_PROFILE_IMPLEMENTATION.md`
 - Church WhatsApp setup: [docs/whatsapp-business-setup.md](docs/whatsapp-business-setup.md)
 
@@ -56,6 +57,10 @@ To use the real Dove API instead, set `DOVE_API_URL` in `.env.local`, e.g. `http
 | `APP_URL` | Metadata and install instructions | `https://app.abwog.org` |
 
 Dove must have `PROFILE_URL=https://app.abwog.org/profile` so emailed links open this app (Dove A1).
+
+## Confession audio (staff tool)
+
+Confession MP3s (a female and a male voice) are made on a staff computer with a free voice called Kokoro, then uploaded in Olive. The tool lives in [tools/confession-audio/](tools/confession-audio/) and has its own README with setup, usage and troubleshooting. It is not part of the app and is not installed with it.
 
 ## Scripts
 

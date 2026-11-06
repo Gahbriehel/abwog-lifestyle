@@ -1,0 +1,5 @@
+node_modules
+# Your working files: confession texts, generated audio and your own word list.
+texts/
+out/
+pronunciations.json

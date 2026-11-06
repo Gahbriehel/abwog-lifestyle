@@ -1,0 +1,17 @@
+{
+  "name": "confession-audio",
+  "private": true,
+  "type": "module",
+  "description": "Turns confession text files into male and female MP3s with Kokoro. Runs on a staff computer, not on the server.",
+  "scripts": {
+    "generate": "bun generate.ts",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "kokoro-js": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "^5"
+  }
+}
