@@ -3,6 +3,7 @@ import { DoveError } from "./dove-errors";
 import type {
   ConfessionDetail,
   ConfessionList,
+  CurrentScriptures,
   EventList,
   EventSummary,
   GivingAccount,
@@ -177,4 +178,11 @@ export function getConfession(slug: string): Promise<ConfessionDetail> {
 /** Counts one listen. Dove answers 204 with no body. */
 export async function recordConfessionListen(id: string): Promise<void> {
   await doveFetch(`/confessions/${encodeURIComponent(id)}/listen`, { method: "POST" });
+}
+
+// ── Scripture (public) ─────────────────────────────────────────────────────
+
+/** The scripture for this week and for this year. See docs/dove-scripture.md. */
+export function getCurrentScriptures(): Promise<CurrentScriptures> {
+  return doveFetch<CurrentScriptures>("/scriptures/current");
 }

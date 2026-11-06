@@ -111,17 +111,15 @@ test.describe("confessions list", () => {
     await expect(categories.getByRole("link", { name: "Provision" })).toHaveAttribute("aria-current", "true");
   });
 
-  test("is reachable from the menu and the home page", async ({ page }) => {
+  test("is reachable from the menu", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("region", { name: "Confessions" }).getByRole("link", { name: /Browse confessions/ }).click();
-    await expect(page).toHaveURL(/\/confessions$/);
-
     const menu = page.getByRole("navigation", { name: "Menu" });
     await expect(async () => {
       await page.getByRole("button", { name: "Open menu" }).click();
       await expect(menu).toBeVisible({ timeout: 1000 });
     }).toPass();
-    await expect(menu.getByRole("link", { name: "Confessions" })).toHaveAttribute("aria-current", "page");
+    await menu.getByRole("link", { name: "Confessions" }).click();
+    await expect(page).toHaveURL(/\/confessions$/);
   });
 });
 

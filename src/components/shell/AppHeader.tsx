@@ -34,9 +34,8 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
         >
           <Menu aria-hidden className="size-[22px]" />
         </button>
-        <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label={`${church.shortName} home`}>
-          <ChurchLogo size={30} />
-          <span className="truncate font-serif text-base font-semibold lg:text-lg">{church.shortName}</span>
+        <Link href="/" className="flex items-center" aria-label={`${church.shortName} home`}>
+          <ChurchLogo size={32} />
         </Link>
         {signedIn ? (
           // Phones reach the account from the tab bar; wider screens get it up here.

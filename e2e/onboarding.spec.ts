@@ -275,7 +275,7 @@ test.describe("change PIN when signed in", () => {
 
 test("signed-out home page offers sign in, the profile update and install card", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Welcome to Amazing Grace" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Hello Amazing," })).toBeVisible();
   await expect(page.getByRole("link", { name: "Update my details" })).toHaveAttribute("href", "/profile");
   await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   await expect(page.getByRole("heading", { name: "Stay connected" })).toBeVisible();

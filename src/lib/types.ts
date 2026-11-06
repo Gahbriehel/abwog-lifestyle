@@ -223,3 +223,27 @@ export interface ConfessionDetail extends ConfessionSummary {
   previous: ConfessionNeighbour | null;
   next: ConfessionNeighbour | null;
 }
+
+// ── Scripture (home page) ──────────────────────────────────────────────────
+
+export type ScriptureKind = "WEEK" | "YEAR";
+
+export interface Scripture {
+  id: string;
+  kind: ScriptureKind;
+  text: string;
+  /** "Exodus 33:19" */
+  reference: string;
+  /** "NKJV" */
+  translation: string | null;
+  /** Who gave the word, e.g. "Rev. Deji Olabode". */
+  givenBy: string | null;
+  /** "YYYY-MM-DD", the first day this scripture is current. */
+  startsOn: string;
+}
+
+/** Either can be null when nothing is published for it yet. */
+export interface CurrentScriptures {
+  week: Scripture | null;
+  year: Scripture | null;
+}

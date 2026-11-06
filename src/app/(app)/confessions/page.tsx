@@ -40,7 +40,7 @@ export default async function ConfessionsPage({ searchParams }: { searchParams: 
       <form role="search" action="/confessions" className="mt-5 flex items-start gap-2 lg:max-w-xl">
         {category && <input type="hidden" name="category" value={category} />}
         <SearchField label="Search confessions" name="q" defaultValue={q} placeholder="Search confessions" className="flex-1" />
-        <button type="submit" className={buttonClasses("primary", false, undefined, "lg")}>
+        <button type="submit" className={buttonClasses("primary", false, "min-h-12")}>
           Search
         </button>
       </form>

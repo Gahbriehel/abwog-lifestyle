@@ -33,6 +33,7 @@
 //                               confession-for-peace (female only), confession-of-gratitude and confession-for-wisdom
 //                               (no audio, so the phone voice reads them), hidden-draft (404)
 //   POST /confessions/:id/listen   204, and the count goes up
+//   GET  /scriptures/current    { week, year }; set STUB_NO_SCRIPTURE=1 to get nulls
 //   GET  /public/confession-audio/...   a 6-second silent MP3, with Range support
 
 const PORT = Number(process.env.STUB_PORT ?? 4010);
@@ -547,6 +548,33 @@ Bun.serve({
     }
 
     if (req.method === "GET" && url.pathname.startsWith("/public/confession-audio/")) return serveSilence(req);
+
+    if (req.method === "GET" && url.pathname === "/api/v1/scriptures/current") {
+      if (process.env.STUB_NO_SCRIPTURE) return ok({ week: null, year: null }, "Current scriptures retrieved successfully");
+      return ok(
+        {
+          week: {
+            id: "scripture-week",
+            kind: "WEEK",
+            text: "Then he said, I will make all my goodness pass before you, and I will proclaim the name of the Lord before you. I will be gracious to whom I will be gracious and I will have compassion on whom I will have compassion.",
+            reference: "Exodus 33:19",
+            translation: "NKJV",
+            givenBy: "Rev. Deji Olabode",
+            startsOn: "2026-11-02",
+          },
+          year: {
+            id: "scripture-year",
+            kind: "YEAR",
+            text: "Behold, I will do a new thing, now it shall spring forth; shall you not know it? I will even make a road in the wilderness and rivers in the desert.",
+            reference: "Isaiah 43:19",
+            translation: "NKJV",
+            givenBy: null,
+            startsOn: "2026-01-01",
+          },
+        },
+        "Current scriptures retrieved successfully",
+      );
+    }
 
     if (req.method === "GET" && url.pathname === "/api/v1/confessions") {
       const search = url.searchParams.get("search")?.toLowerCase();

@@ -12,7 +12,8 @@ import { AudioPlayer } from "./AudioPlayer";
 import { SpeechPlayer } from "./SpeechPlayer";
 
 const SIZE_KEY = "confession-text-size";
-const SIZES = ["text-[17px]", "text-xl", "text-[22px]"] as const;
+// Default matches the 15px body copy; the buttons step up for easier reading.
+const SIZES = ["text-[15px]", "text-[17px]", "text-xl"] as const;
 
 interface Props {
   id: string;
@@ -83,8 +84,8 @@ export function ConfessionReader({
       {scriptureRef && <p className="mt-1 text-[15px] font-medium text-gold">{scriptureRef}</p>}
 
       <section aria-label="Listen" className="mt-5 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-xs sm:p-5">
-        <h2 className="type-heading mb-3 flex items-center gap-2">
-          <Headphones aria-hidden className="size-5 text-gold" />
+        <h2 className="type-card mb-3 flex items-center gap-2">
+          <Headphones aria-hidden className="size-4 text-gold" />
           Listen
         </h2>
         {hasRecording ? (
@@ -102,7 +103,7 @@ export function ConfessionReader({
       </section>
 
       <div className="mt-6 flex items-center justify-between">
-        <h2 className="type-heading">Read</h2>
+        <h2 className="type-card">Read</h2>
         <div className="flex items-center gap-1" role="group" aria-label="Text size">
           <button
             type="button"

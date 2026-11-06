@@ -13,7 +13,7 @@ export function ConfessionCard({ item }: { item: ConfessionSummary }) {
     >
       <span
         aria-hidden
-        className="type-heading flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-primary-soft text-primary-soft-fg"
+        className="type-card flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-primary-soft text-primary-soft-fg"
       >
         {item.position ?? "·"}
       </span>
