@@ -34,6 +34,8 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
   /** Bumped on every start or stop, so late events from a cancelled sentence are ignored. */
   const run = useRef(0);
+  /** Safari drops an utterance's events if nothing holds a reference to it. */
+  const current = useRef<SpeechSynthesisUtterance | null>(null);
   const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const addListened = useListenCounter(confessionId);
 
@@ -45,7 +47,9 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
   const stopSpeaking = useCallback(() => {
     run.current += 1;
     if (startTimer.current) clearTimeout(startTimer.current);
-    window.speechSynthesis.cancel();
+    const synth = window.speechSynthesis;
+    // Safari can swallow the next speak() after a cancel() with nothing queued.
+    if (synth.speaking || synth.pending) synth.cancel();
   }, []);
 
   const speakFrom = useCallback(
@@ -64,6 +68,7 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
         }
         setPosition(i);
         const utterance = new SpeechSynthesisUtterance(chunks[i].text);
+        current.current = utterance;
         utterance.rate = rateRef.current;
         utterance.lang = voiceRef.current?.lang ?? "en-GB";
         if (voiceRef.current) utterance.voice = voiceRef.current;
@@ -93,7 +98,10 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
             setError("Your device didn't start reading. Check that your phone's text-to-speech is turned on.");
           }, START_TIMEOUT_MS);
         }
-        window.speechSynthesis.speak(utterance);
+        const synth = window.speechSynthesis;
+        // iOS can leave the engine paused; wake it inside the tap.
+        if (synth.paused) synth.resume();
+        synth.speak(utterance);
       };
       speakChunk(from);
     },
@@ -108,6 +116,11 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
   // The best installed English voice, and stopping when the page goes away.
   useEffect(() => {
     if (!supported) return;
+    // Safari 16.4+: ask for "playback" audio, which can ignore the silent switch. Harmless elsewhere.
+    try {
+      (navigator as Navigator & { audioSession?: { type: string } }).audioSession!.type = "playback";
+    } catch {}
+    // Safari only finishes setting up the voice engine once asked.
     const load = () => {
       voiceRef.current = pickVoice(window.speechSynthesis.getVoices());
     };
@@ -232,7 +245,7 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
       </div>
 
       <p className="mt-3 text-sm text-fg-muted">
-        Read by your phone&apos;s own voice. It may stop if the screen locks, so keep the screen on while listening.
+        Read by your phone&apos;s own voice. It may stop if the screen locks, so keep the screen on while listening. On iPhone, speech is silent while the side switch is set to mute.
       </p>
       {error && (
         <p role="alert" className="mt-3 flex items-start gap-2 text-sm text-danger">
