@@ -21,7 +21,6 @@ import {
 const GENDER_OPTIONS = [
   { value: "MALE", label: "Male" },
   { value: "FEMALE", label: "Female" },
-  { value: "OTHER", label: "Other" },
 ] as const;
 
 function SectionTitle({ children }: { children: string }) {
