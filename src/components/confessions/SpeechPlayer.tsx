@@ -116,10 +116,6 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
   // The best installed English voice, and stopping when the page goes away.
   useEffect(() => {
     if (!supported) return;
-    // Safari 16.4+: ask for "playback" audio, which can ignore the silent switch. Harmless elsewhere.
-    try {
-      (navigator as Navigator & { audioSession?: { type: string } }).audioSession!.type = "playback";
-    } catch {}
     // Safari only finishes setting up the voice engine once asked.
     const load = () => {
       voiceRef.current = pickVoice(window.speechSynthesis.getVoices());
