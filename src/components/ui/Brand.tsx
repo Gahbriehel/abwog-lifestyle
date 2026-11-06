@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { church } from "@/lib/church";
 import { cn } from "@/lib/cn";
@@ -23,23 +24,28 @@ export function ChurchLogo({ size = 64, className }: { size?: number; className?
   );
 }
 
-/** Full header (claim screen) or compact header (everything after). */
+/** Full header (claim screen) or compact header (everything after). The logo and name link home. */
 export function ChurchHeader({ variant = "compact" }: { variant?: "full" | "compact" }) {
+  const focus = "rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary";
   if (variant === "full") {
     return (
       <header className="flex flex-col items-center text-center">
-        <ChurchLogo size={60} />
-        <p className="mt-4 text-balance font-serif text-lg font-semibold leading-tight">
-          {church.name}
-        </p>
+        <Link href="/" aria-label={`${church.name}, home`} className={cn("flex flex-col items-center", focus)}>
+          <ChurchLogo size={60} />
+          <span className="mt-4 text-balance font-serif text-lg font-semibold leading-tight">
+            {church.name}
+          </span>
+        </Link>
         <p className="mt-1 text-sm text-fg-muted">({church.formerName})</p>
       </header>
     );
   }
   return (
-    <header className="flex items-center gap-3 border-b border-border pb-4">
-      <ChurchLogo size={36} />
-      <p className="font-serif text-base font-semibold leading-tight">{church.name}</p>
+    <header className="border-b border-border pb-4">
+      <Link href="/" aria-label={`${church.name}, home`} className={cn("flex items-center gap-3", focus)}>
+        <ChurchLogo size={36} />
+        <span className="font-serif text-base font-semibold leading-tight">{church.name}</span>
+      </Link>
     </header>
   );
 }
