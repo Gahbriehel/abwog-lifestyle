@@ -1,4 +1,4 @@
-import { ArrowRight, HandHeart } from "lucide-react";
+import { ArrowRight, BookOpen, HandHeart } from "lucide-react";
 import Link from "next/link";
 import { EventCard } from "@/components/events/EventCard";
 import { InstallCard } from "@/components/onboarding/InstallCard";
@@ -70,6 +70,25 @@ export default async function HomePage() {
           </Link>
         </section>
       </div>
+
+      <section
+        aria-label="Confessions"
+        className="mt-4 flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:mt-6"
+      >
+        <div className="flex items-start gap-3.5">
+          <span aria-hidden className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary-soft-fg">
+            <BookOpen className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="type-card">Confessions</h2>
+            <p className="mt-0.5 text-sm text-fg-muted">Declare God&apos;s word over your life. Read them, or listen.</p>
+          </div>
+        </div>
+        <Link href="/confessions" className={buttonClasses("secondary")}>
+          Browse confessions
+          <ArrowRight aria-hidden className="size-4" />
+        </Link>
+      </section>
 
       <section aria-labelledby="upcoming" className="mt-10">
         <div className="flex items-center justify-between gap-4">

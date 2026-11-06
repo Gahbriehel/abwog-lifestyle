@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Search } from "lucide-react";
 import {
   useId,
   type InputHTMLAttributes,
@@ -116,6 +116,35 @@ export function TextField({
         input
       )}
     </FieldShell>
+  );
+}
+
+/**
+ * A search box with the magnifier inside it. Lives here, in a client file, because the shared
+ * control styles can't be imported from a server page (they would arrive as a client reference).
+ */
+export function SearchField({
+  label,
+  className,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <div className={cn("relative min-w-0", className)}>
+      <Search aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-fg-muted" />
+      <input
+        type="search"
+        aria-label={label}
+        enterKeyHint="search"
+        autoComplete="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        className={cn(
+          controlClasses,
+          "appearance-none border-border-strong pl-11 [&::-webkit-search-cancel-button]:appearance-none",
+        )}
+        {...props}
+      />
+    </div>
   );
 }
 

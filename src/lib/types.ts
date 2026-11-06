@@ -181,3 +181,45 @@ export interface GivingAccount {
   purposes: GivingPurpose[];
   sortOrder: number;
 }
+
+// ── Confessions ────────────────────────────────────────────────────────────
+
+export type ConfessionVoice = "female" | "male";
+
+/** One recorded voice. `url` is a path on Dove's host (e.g. /public/confession-audio/...). */
+export interface ConfessionAudioFile {
+  url: string;
+  durationSec: number;
+}
+
+export type ConfessionAudioMap = Partial<Record<ConfessionVoice, ConfessionAudioFile>>;
+
+export interface ConfessionSummary {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  scriptureRef: string | null;
+  category: string | null;
+  /** Rank among published confessions, set by staff order. Shown as the confession's number. */
+  position: number | null;
+  wordCount: number;
+  listenCount: number;
+  audio: ConfessionAudioMap;
+}
+
+export interface ConfessionList {
+  items: ConfessionSummary[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
+}
+
+export interface ConfessionNeighbour {
+  slug: string;
+  title: string;
+}
+
+export interface ConfessionDetail extends ConfessionSummary {
+  body: string;
+  previous: ConfessionNeighbour | null;
+  next: ConfessionNeighbour | null;
+}

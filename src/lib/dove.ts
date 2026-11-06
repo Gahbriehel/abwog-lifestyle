@@ -1,6 +1,8 @@
 import "server-only";
 import { DoveError } from "./dove-errors";
 import type {
+  ConfessionDetail,
+  ConfessionList,
   EventList,
   EventSummary,
   GivingAccount,
@@ -148,4 +150,31 @@ export function registerForEvent(id: string, payload: RegisterPayload): Promise<
 /** Public, active accounts only, already sorted. See docs/dove-giving-accounts.md. */
 export function getGivingAccounts(purpose?: GivingPurpose): Promise<GivingAccount[]> {
   return doveFetch<GivingAccount[]>(purpose ? `/giving-accounts?purpose=${purpose}` : "/giving-accounts");
+}
+
+// ── Confessions (public) ───────────────────────────────────────────────────
+
+/** Dove's host, without the /api/v1 path. Audio files are served from here. */
+export function doveOrigin(): string {
+  return new URL(baseUrl()).origin;
+}
+
+export function getConfessions(query: { search?: string; category?: string; page?: number; limit?: number } = {}): Promise<ConfessionList> {
+  const params = new URLSearchParams({ limit: String(query.limit ?? 50), page: String(query.page ?? 1) });
+  if (query.search) params.set("search", query.search);
+  if (query.category) params.set("category", query.category);
+  return doveFetch<ConfessionList>(`/confessions?${params}`);
+}
+
+export function getConfessionCategories(): Promise<string[]> {
+  return doveFetch<string[]>("/confessions/categories");
+}
+
+export function getConfession(slug: string): Promise<ConfessionDetail> {
+  return doveFetch<ConfessionDetail>(`/confessions/${encodeURIComponent(slug)}`);
+}
+
+/** Counts one listen. Dove answers 204 with no body. */
+export async function recordConfessionListen(id: string): Promise<void> {
+  await doveFetch(`/confessions/${encodeURIComponent(id)}/listen`, { method: "POST" });
 }

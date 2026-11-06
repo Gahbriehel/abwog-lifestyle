@@ -27,6 +27,13 @@
 //   POST /events/:id/register   dupe@example.com → 409 with the existing registration
 //                               first name "Fail" → 500; events event-full / event-ended / event-sunday → 400
 //   GET  /giving-accounts       active accounts, sorted; ?purpose=TITHE filters (see docs/dove-giving-accounts.md)
+//   GET  /confessions (?search, ?category, ?page, ?limit≤100)   published, in staff order, with position
+//   GET  /confessions/categories
+//   GET  /confessions/:slug     with previous/next. Slugs: confession-for-protection (both voices, 143 listens),
+//                               confession-for-peace (female only), confession-of-gratitude and confession-for-wisdom
+//                               (no audio, so the phone voice reads them), hidden-draft (404)
+//   POST /confessions/:id/listen   204, and the count goes up
+//   GET  /public/confession-audio/...   a 6-second silent MP3, with Range support
 
 const PORT = Number(process.env.STUB_PORT ?? 4010);
 const APP = process.env.APP_ORIGIN ?? "http://localhost:3100";
@@ -217,6 +224,130 @@ const registrationFor = (n: number) => ({
   team: { id: "team-1", name: "Team Grace", color: "#5B2C5E" },
 });
 let registrationCount = 100;
+
+type StubConfession = {
+  id: string;
+  slug: string;
+  title: string;
+  body: string;
+  scriptureRef: string | null;
+  category: string | null;
+  status: "DRAFT" | "PUBLISHED";
+  sortOrder: number;
+  listenCount: number;
+  voices: Array<"female" | "male">;
+};
+
+const confessions: StubConfession[] = [
+  {
+    id: "conf-1",
+    slug: "confession-for-protection",
+    title: "Confession for Protection",
+    scriptureRef: "Psalm 91:1-4",
+    category: "Protection",
+    status: "PUBLISHED",
+    sortOrder: 0,
+    listenCount: 143,
+    voices: ["female", "male"],
+    body: `He that dwelleth in the secret place of the most High shall abide under the shadow of the Almighty. I will say of the Lord, He is my refuge and my fortress: my God; in him will I trust.
+
+Surely he shall deliver me from the snare of the fowler, and from the noisome pestilence. He shall cover me with his feathers, and under his wings shall I trust: his truth shall be my shield and buckler.`,
+  },
+  {
+    id: "conf-2",
+    slug: "confession-for-peace",
+    title: "Confession for Peace",
+    scriptureRef: "John 14:27",
+    category: "Peace",
+    status: "PUBLISHED",
+    sortOrder: 1,
+    listenCount: 1,
+    voices: ["female"],
+    body: `Peace I leave with you, my peace I give unto you. I receive the peace of God today. My heart is not troubled, neither is it afraid.
+
+I rest in the Lord. Every worry I carry, I lay down at his feet.`,
+  },
+  {
+    id: "conf-3",
+    slug: "confession-of-gratitude",
+    title: "Confession of Gratitude",
+    scriptureRef: "Psalm 100:4",
+    category: "Provision",
+    status: "PUBLISHED",
+    sortOrder: 2,
+    listenCount: 0,
+    voices: [],
+    body: `Thank you, Lord, for waking me up today. Thank you for your goodness over my life. I enter your gates with thanksgiving and your courts with praise.
+
+You have been faithful in every season. You have provided for me when I could not see the way. I will not forget your benefits.
+
+Today I choose joy. Today I choose gratitude. My cup runs over, and I give you glory.`,
+  },
+  {
+    id: "conf-4",
+    slug: "confession-for-wisdom",
+    title: "Confession for Wisdom and Guidance",
+    scriptureRef: "James 1:5",
+    category: null,
+    status: "PUBLISHED",
+    sortOrder: 3,
+    listenCount: 28,
+    voices: [],
+    body: `I ask God for wisdom, and he gives it to me liberally and without reproach. I am led by the Spirit of God in every decision I make.`,
+  },
+  {
+    id: "conf-5",
+    slug: "hidden-draft",
+    title: "Hidden Draft",
+    scriptureRef: null,
+    category: null,
+    status: "DRAFT",
+    sortOrder: 4,
+    listenCount: 0,
+    voices: [],
+    body: "Not published yet.",
+  },
+];
+
+const published = () => confessions.filter((c) => c.status === "PUBLISHED").sort((a, b) => a.sortOrder - b.sortOrder);
+const wordCount = (text: string) => text.trim().split(/\s+/).length;
+const excerptOf = (text: string) => (text.length <= 160 ? text : `${text.slice(0, 160).replace(/\s+\S*$/, "")}…`);
+
+function confessionItem(c: StubConfession) {
+  const audio: Record<string, { url: string; durationSec: number }> = {};
+  for (const voice of c.voices) {
+    audio[voice] = { url: `/public/confession-audio/${c.id}/${voice}-a1b2c3d4.mp3`, durationSec: 6 };
+  }
+  const index = published().findIndex((p) => p.id === c.id);
+  return {
+    id: c.id,
+    slug: c.slug,
+    title: c.title,
+    excerpt: excerptOf(c.body),
+    scriptureRef: c.scriptureRef,
+    category: c.category,
+    status: c.status,
+    position: index >= 0 ? index + 1 : null,
+    wordCount: wordCount(c.body),
+    listenCount: c.listenCount,
+    audio,
+  };
+}
+
+async function serveSilence(req: Request): Promise<Response> {
+  const file = Bun.file(new URL("./fixtures/silence.mp3", import.meta.url).pathname);
+  const size = file.size;
+  const headers = { "Content-Type": "audio/mpeg", "Accept-Ranges": "bytes", "Cache-Control": "public, max-age=31536000, immutable" };
+  const range = req.headers.get("range")?.match(/^bytes=(\d*)-(\d*)$/);
+  if (!range) return new Response(file, { headers: { ...headers, "Content-Length": String(size) } });
+  const start = range[1] ? Number(range[1]) : 0;
+  const end = range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+  if (start > end || start >= size) return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${size}` } });
+  return new Response(file.slice(start, end + 1), {
+    status: 206,
+    headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${size}`, "Content-Length": String(end - start + 1) },
+  });
+}
 
 const VALID_PIN = "4729";
 
@@ -415,6 +546,52 @@ Bun.serve({
       return ok([...list].sort((a, b) => a.sortOrder - b.sortOrder), "Giving accounts retrieved successfully");
     }
 
+    if (req.method === "GET" && url.pathname.startsWith("/public/confession-audio/")) return serveSilence(req);
+
+    if (req.method === "GET" && url.pathname === "/api/v1/confessions") {
+      const search = url.searchParams.get("search")?.toLowerCase();
+      const category = url.searchParams.get("category")?.toLowerCase();
+      const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+      const limit = Number(url.searchParams.get("limit") ?? 20);
+      if (limit > 100) return fail(400, "Limit cannot exceed 100 for public requests");
+      const filtered = published()
+        .filter((c) => !category || c.category?.toLowerCase() === category)
+        .filter((c) => !search || `${c.title} ${c.body}`.toLowerCase().includes(search));
+      return ok(
+        {
+          items: filtered.slice((page - 1) * limit, page * limit).map(confessionItem),
+          meta: { total: filtered.length, page, limit, totalPages: Math.ceil(filtered.length / limit) },
+        },
+        "Confessions retrieved successfully",
+      );
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/v1/confessions/categories") {
+      const names = [...new Set(published().map((c) => c.category).filter((c): c is string => Boolean(c)))].sort();
+      return ok(names, "Categories retrieved successfully");
+    }
+
+    const confessionMatch = url.pathname.match(/^\/api\/v1\/confessions\/([^/]+?)(\/listen)?$/);
+    if (confessionMatch) {
+      const key = decodeURIComponent(confessionMatch[1]);
+      if (req.method === "POST" && confessionMatch[2]) {
+        const target = published().find((c) => c.id === key);
+        if (!target) return fail(404, "Confession not found");
+        target.listenCount += 1;
+        return new Response(null, { status: 204 });
+      }
+      if (req.method === "GET" && !confessionMatch[2]) {
+        const list = published();
+        const index = list.findIndex((c) => c.slug === key || c.id === key);
+        if (index < 0) return fail(404, "Confession not found");
+        const neighbour = (c?: StubConfession) => (c ? { slug: c.slug, title: c.title } : null);
+        return ok(
+          { ...confessionItem(list[index]), body: list[index].body, previous: neighbour(list[index - 1]), next: neighbour(list[index + 1]) },
+          "Confession retrieved successfully",
+        );
+      }
+    }
+
     if (match && req.method === "GET") {
       const person = resolve(decodeURIComponent(match[1]));
       if (person instanceof Response) return person;
@@ -453,5 +630,5 @@ Bun.serve({
 });
 
 console.log(`Dove stub listening on http://localhost:${PORT}/api/v1`);
-console.log(`Public: ${APP}/ · /events · /events/event-youth · /give`);
+console.log(`Public: ${APP}/ · /events · /events/event-youth · /give · /confessions`);
 console.log(`Try: ${APP}/profile/member-sarah · /profile/new-visitor · /profile/expired-link · /profile/used`);

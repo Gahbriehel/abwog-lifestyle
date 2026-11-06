@@ -15,8 +15,13 @@ test.describe("public screens (no sign-in)", () => {
 
   test("menu reaches the giving page", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Open menu" }).click();
-    await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Give" }).click();
+    const menu = page.getByRole("navigation", { name: "Menu" });
+    // The page can be clicked before it has finished loading its scripts, so retry until the menu opens.
+    await expect(async () => {
+      await page.getByRole("button", { name: "Open menu" }).click();
+      await expect(menu).toBeVisible({ timeout: 1000 });
+    }).toPass();
+    await menu.getByRole("link", { name: "Give" }).click();
     await expect(page).toHaveURL(/\/give$/);
     await expect(page.getByRole("heading", { level: 1, name: "Give" })).toBeVisible();
     // Tithe is the default purpose: Naira account first, then the USD one.

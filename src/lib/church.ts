@@ -11,6 +11,12 @@ export const church = {
   websiteUrl: "https://abwog.org",
 } as const;
 
+/** Switches for optional parts of the UI. */
+export const features = {
+  /** Show "143 listens" on confessions. Dove always counts them; this only decides whether members see the number. */
+  showListenCounts: false,
+} as const;
+
 export const MEMBERSHIP_OPTIONS = [
   {
     value: "VISITOR",

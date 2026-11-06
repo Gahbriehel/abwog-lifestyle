@@ -5,6 +5,7 @@ The member-facing Progressive Web App for **Abiding Word Of Grace Missions** (PK
 What anyone can do, without signing in:
 - See what's coming up on the home page and the **Events** tab, open an event and **register** for it (they get a check-in QR code).
 - Open **Give** (from the menu or the home page) to see the church's bank accounts and copy an account number.
+- Browse **Confessions** (from the menu or the home page): search, read, and **listen**. Each confession can have a recorded female and male voice, with speed control, skip back and forward 15 seconds, and lock-screen controls. A confession without a recording is read aloud by the phone's own voice, sentence by sentence, with pause and speed controls.
 
 What members can do:
 - Sign in with a PIN; the greeting, account tab and event registration form adapt.
@@ -44,6 +45,11 @@ The stub prints the "emailed" link when you request one. You can also open these
 | `/events`, `/events/event-youth` | Public events (also `event-sunday` no registration, `event-full`, `event-ended`) |
 | `/events/event-youth/register` | Register; email `dupe@example.com` → "already registered", first name `Fail` → error |
 | `/give` | Three giving accounts (NGN, NGN, USD) |
+| `/confessions` | Four confessions: search, categories (Peace, Protection, Provision) |
+| `/confessions/confession-for-protection` | Both voices (female and male), with next link |
+| `/confessions/confession-for-peace` | Female recording only |
+| `/confessions/confession-of-gratitude` | No recording, so the phone's voice reads it |
+| `/confessions/hidden-draft` | A draft: 404, like the real API |
 
 Enter the first name **Fail** and save to see the error toast.
 
@@ -58,6 +64,13 @@ To use the real Dove API instead, set `DOVE_API_URL` in `.env.local`, e.g. `http
 
 Dove must have `PROFILE_URL=https://app.abwog.org/profile` so emailed links open this app (Dove A1).
 
+## Confessions in the app
+
+The list, reader and player are in `src/app/(app)/confessions/` and `src/components/confessions/`. Backend contract: [docs/dove-confessions.md](docs/dove-confessions.md).
+
+- **Listen counts:** Dove always counts listens (once per confession per visit, after about 10 seconds of playback). Showing the number to members is a switch: `features.showListenCounts` in `src/lib/church.ts` (off by default).
+- **Phone voice:** read aloud with the browser's built-in speech (`src/lib/speech.ts`, `SpeechPlayer.tsx`). It reads one sentence at a time, because long utterances get cut off on some phones. It may stop if the screen locks.
+
 ## Confession audio (staff tool)
 
 Confession MP3s (a female and a male voice) are made on a staff computer with a free voice called Kokoro, then uploaded in Olive. The tool lives in [tools/confession-audio/](tools/confession-audio/) and has its own README with setup, usage and troubleshooting. It is not part of the app and is not installed with it.
@@ -69,7 +82,7 @@ Confession MP3s (a female and a male voice) are made on a staff computer with a 
 | `bun dev` / `bun run build` / `bun start` | Next.js on port 3100 |
 | `bun dev:stub` | Dove stub on port 4010 |
 | `bun run test` | Unit tests (Vitest) |
-| `bun run test:e2e` | Playwright on a 390×844 phone viewport, in light and dark mode. Starts the stub and dev server itself. Set `PW_CHROMIUM_PATH` to reuse an installed Chromium; otherwise run `bunx playwright install chromium` first. |
+| `bun run test:e2e` | Playwright on a 390×844 phone viewport, in light and dark mode. Starts its own stub (port 4011) and dev server (port 3101, build folder `.next-e2e`), so it never touches a `bun dev` you have running, which may be talking to the real API. Set `PW_CHROMIUM_PATH` to reuse an installed Chromium; otherwise run `bunx playwright install chromium` first. |
 | `bun run check-all` | Types, lint and unit tests |
 | `bun icons` | Regenerates the PWA icons from `public/brand/icon-gold.png` |
 
