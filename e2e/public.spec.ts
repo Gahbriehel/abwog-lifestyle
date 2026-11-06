@@ -19,9 +19,15 @@ test.describe("public screens (no sign-in)", () => {
     await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Give" }).click();
     await expect(page).toHaveURL(/\/give$/);
     await expect(page.getByRole("heading", { level: 1, name: "Give" })).toBeVisible();
+    // Tithe is the default purpose: Naira account first, then the USD one.
     await expect(page.getByRole("region", { name: "Tithes & Offerings" }).getByText("0123456789")).toBeVisible();
-    await expect(page.getByRole("region", { name: "Building Project" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Missions (USD)" }).getByText("USD", { exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Building Project" })).toHaveCount(0);
+
+    await page.getByRole("navigation", { name: "Giving purpose" }).getByRole("link", { name: /Building fund/ }).click();
+    await expect(page).toHaveURL(/purpose=BUILDING/);
+    await expect(page.getByRole("region", { name: "Building Project" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Tithes & Offerings" })).toHaveCount(0);
   });
 
   test("events list shows upcoming events only", async ({ page }) => {

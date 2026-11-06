@@ -26,7 +26,7 @@
 //   GET  /events/:id
 //   POST /events/:id/register   dupe@example.com → 409 with the existing registration
 //                               first name "Fail" → 500; events event-full / event-ended / event-sunday → 400
-//   GET  /giving-accounts       active accounts, sorted (see docs/dove-giving-accounts.md)
+//   GET  /giving-accounts       active accounts, sorted; ?purpose=TITHE filters (see docs/dove-giving-accounts.md)
 
 const PORT = Number(process.env.STUB_PORT ?? 4010);
 const APP = process.env.APP_ORIGIN ?? "http://localhost:3100";
@@ -169,6 +169,8 @@ const events = [
   },
 ];
 
+const PURPOSES: string[] = ["TITHE", "OFFERING", "BUILDING", "MISSIONS", "SEED", "SPECIAL"];
+
 const givingAccounts = [
   {
     id: "give-tithe",
@@ -178,6 +180,7 @@ const givingAccounts = [
     accountNumber: "0123456789",
     currency: "NGN",
     note: "Use your name and the purpose as the transfer narration.",
+    purposes: ["TITHE", "OFFERING", "SEED"],
     sortOrder: 0,
   },
   {
@@ -188,6 +191,7 @@ const givingAccounts = [
     accountNumber: "1012345678",
     currency: "NGN",
     note: null,
+    purposes: ["BUILDING", "OFFERING"],
     sortOrder: 1,
   },
   {
@@ -198,6 +202,7 @@ const givingAccounts = [
     accountNumber: "5012345678",
     currency: "USD",
     note: "For gifts from outside Nigeria.",
+    purposes: ["TITHE", "OFFERING", "BUILDING", "MISSIONS", "SEED"],
     sortOrder: 2,
   },
 ];
@@ -404,7 +409,10 @@ Bun.serve({
     }
 
     if (req.method === "GET" && url.pathname === "/api/v1/giving-accounts") {
-      return ok([...givingAccounts].sort((a, b) => a.sortOrder - b.sortOrder), "Giving accounts retrieved successfully");
+      const purpose = url.searchParams.get("purpose");
+      if (purpose && !PURPOSES.includes(purpose)) return fail(400, "Invalid purpose", "VALIDATION_ERROR");
+      const list = givingAccounts.filter((a) => !purpose || a.purposes.includes(purpose));
+      return ok([...list].sort((a, b) => a.sortOrder - b.sortOrder), "Giving accounts retrieved successfully");
     }
 
     if (match && req.method === "GET") {

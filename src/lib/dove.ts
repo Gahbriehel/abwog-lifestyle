@@ -4,6 +4,7 @@ import type {
   EventList,
   EventSummary,
   GivingAccount,
+  GivingPurpose,
   MemberLoginPayload,
   MemberLoginResult,
   MemberSession,
@@ -145,6 +146,6 @@ export function registerForEvent(id: string, payload: RegisterPayload): Promise<
 }
 
 /** Public, active accounts only, already sorted. See docs/dove-giving-accounts.md. */
-export function getGivingAccounts(): Promise<GivingAccount[]> {
-  return doveFetch<GivingAccount[]>("/giving-accounts");
+export function getGivingAccounts(purpose?: GivingPurpose): Promise<GivingAccount[]> {
+  return doveFetch<GivingAccount[]>(purpose ? `/giving-accounts?purpose=${purpose}` : "/giving-accounts");
 }

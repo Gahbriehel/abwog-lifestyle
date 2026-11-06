@@ -166,6 +166,8 @@ export interface RegisterResult {
   registration: EventRegistration;
 }
 
+export type GivingPurpose = "TITHE" | "OFFERING" | "BUILDING" | "MISSIONS" | "SEED" | "SPECIAL";
+
 export interface GivingAccount {
   id: string;
   /** What the money is for, e.g. "Tithe" or "Building project". */
@@ -175,5 +177,7 @@ export interface GivingAccount {
   accountNumber: string;
   currency: string;
   note: string | null;
+  /** What this account can receive; one account may serve several purposes. */
+  purposes: GivingPurpose[];
   sortOrder: number;
 }
