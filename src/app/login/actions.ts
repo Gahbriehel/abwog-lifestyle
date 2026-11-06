@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { church } from "@/lib/church";
 import { loginMember } from "@/lib/dove";
 import { DoveError } from "@/lib/dove-errors";
+import { lockedMessage } from "@/lib/pin";
 import { setSession } from "@/lib/session";
 import type { PinErrorCode } from "@/lib/types";
 import { loginSchema, toIdentifier, type LoginValues } from "@/lib/validation";
@@ -13,14 +14,6 @@ export type LoginResult =
   | { ok: false; kind: "no-pin" }
   | { ok: false; kind: "locked"; message: string }
   | { ok: false; kind: "error"; message: string };
-
-function lockedMessage(lockedUntil?: string): string {
-  const minutes = lockedUntil
-    ? Math.max(1, Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 60_000))
-    : 15;
-  const wait = Number.isFinite(minutes) ? minutes : 15;
-  return `Too many wrong PINs. Please try again in ${wait} minute${wait === 1 ? "" : "s"}, or sign in with an email link instead.`;
-}
 
 /** Signs the member in and redirects home on success; otherwise returns what to show. */
 export async function login(input: LoginValues): Promise<LoginResult> {

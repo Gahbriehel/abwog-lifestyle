@@ -61,7 +61,8 @@ async function doveFetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...(typeof lockedUntil === "string" ? { lockedUntil } : {}),
     });
   }
-  return body.data as T;
+  // Most responses wrap the payload in `data`; the guide shows some unwrapped. Accept both.
+  return (body.data ?? body) as T;
 }
 
 const tokenPath = (token: string) => `/profile/${encodeURIComponent(token)}`;

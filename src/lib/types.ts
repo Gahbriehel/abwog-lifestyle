@@ -1,4 +1,4 @@
-// Shapes returned by the Dove API (see dove/docs/FRONTEND_PWA_GUIDE.md §7).
+// Shapes returned by the Dove API (see dove/docs/FRONTEND_PWA_GUIDE.md (member session and PIN)).
 
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 
@@ -84,6 +84,8 @@ export interface MemberLoginPayload {
 export interface MemberSession {
   person: PersonProfile;
   church: ChurchInfo;
+  /** Freshly signed 30-day token (sliding session). Present on GET /profile/me and login. */
+  accessToken?: string;
 }
 
 export interface MemberLoginResult extends MemberSession {
@@ -105,4 +107,5 @@ export type PinErrorCode =
   | "PIN_LOCKED"
   | "NO_PIN_SET"
   | "INVALID_CREDENTIALS"
+  | "CURRENT_PIN_REQUIRED"
   | "PIN_TOO_WEAK";

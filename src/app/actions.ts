@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { logoutMember, setMemberPin } from "@/lib/dove";
+import { getMe, logoutMember, setMemberPin } from "@/lib/dove";
 import { DoveError } from "@/lib/dove-errors";
-import { PIN_WEAK_MESSAGE } from "@/lib/pin";
-import { clearSession, getSessionToken } from "@/lib/session";
+import { lockedMessage, PIN_WEAK_MESSAGE } from "@/lib/pin";
+import { clearSession, getSessionToken, setSession } from "@/lib/session";
 import { changePinSchemaFor, type ChangePinValues } from "@/lib/validation";
 
 export type ChangePinResult =
@@ -49,8 +49,11 @@ export async function changePin(input: ChangePinValues, hasPin: boolean): Promis
         return {
           ok: false,
           field: "currentPin",
-          message: "Too many wrong PINs. Please try again later or use an email link.",
+          message: lockedMessage(error.extra.lockedUntil),
         };
+      }
+      if (error.code === "CURRENT_PIN_REQUIRED") {
+        return { ok: false, field: "currentPin", message: "Please enter your current PIN." };
       }
       if (error.code === "PIN_TOO_WEAK") {
         return { ok: false, field: "pin", message: PIN_WEAK_MESSAGE };
@@ -69,4 +72,19 @@ export async function signOut(): Promise<never> {
     await logoutMember(accessToken).catch(() => undefined);
   }
   redirect("/");
+}
+
+/**
+ * Sliding session: GET /profile/me returns a fresh 30-day token. Server Components can't write
+ * cookies, so the home page calls this once on load to swap it in. Failures are silent.
+ */
+export async function renewSession(): Promise<void> {
+  const accessToken = await getSessionToken();
+  if (!accessToken) return;
+  try {
+    const { accessToken: renewed } = await getMe(accessToken);
+    if (renewed) await setSession(renewed);
+  } catch (error) {
+    if (error instanceof DoveError && error.status === 401) await clearSession();
+  }
 }

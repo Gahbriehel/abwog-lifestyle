@@ -171,7 +171,7 @@ Bun.serve({
       const key = findByIdentifier(identifier);
       if (!key) return fail(401, "Invalid credentials", "INVALID_CREDENTIALS");
       const person = people[key];
-      if (!person.hasPin) return fail(400, "No PIN has been set for this account", "NO_PIN_SET");
+      if (!person.hasPin) return fail(401, "No PIN set. Please claim your profile link via email to set your PIN.", "NO_PIN_SET");
       if (pin !== VALID_PIN) {
         return Response.json(
           {
@@ -193,7 +193,9 @@ Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v1/profile/me") {
       const session = sessionFrom(req);
       if (session instanceof Response) return session;
-      return ok({ person: { ...people[session.key], hasPin: session.hasPin }, church });
+      // Like Dove: every successful call returns a freshly signed token (sliding session).
+      const accessToken = startSession(session.key, session.hasPin);
+      return ok({ person: { ...people[session.key], hasPin: session.hasPin }, church, accessToken });
     }
 
     if (req.method === "PUT" && url.pathname === "/api/v1/profile/me/pin") {
@@ -201,6 +203,9 @@ Bun.serve({
       if (session instanceof Response) return session;
       const { currentPin, newPin } = (await req.json()) as { currentPin?: string; newPin?: string };
       if (!newPin || !/^\d{4}$/.test(newPin)) return fail(400, "PIN must be 4 digits");
+      if (session.hasPin && !currentPin) {
+        return fail(400, "Current PIN is required to change your PIN", "CURRENT_PIN_REQUIRED");
+      }
       if (session.hasPin && currentPin !== VALID_PIN) {
         return Response.json(
           {

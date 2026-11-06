@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PinSettings } from "@/components/auth/PinSettings";
+import { SessionRenewal } from "@/components/auth/SessionRenewal";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { InstallCard } from "@/components/onboarding/InstallCard";
 import { ChurchHeader } from "@/components/ui/Brand";
@@ -67,6 +68,7 @@ export default async function HomePage() {
   const { person } = session;
   return (
     <Screen>
+      <SessionRenewal />
       <ChurchHeader />
       <h1 className="mt-6 text-balance font-serif text-[28px] font-semibold leading-tight">
         Hello, {person.firstName}

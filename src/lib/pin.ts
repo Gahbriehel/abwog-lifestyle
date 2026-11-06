@@ -24,3 +24,12 @@ export function validateNewPin(pin: string): string | null {
   if (isWeakPin(pin)) return PIN_WEAK_MESSAGE;
   return null;
 }
+
+/** Lockout copy for the PIN screens; `lockedUntil` is Dove's ISO timestamp. */
+export function lockedMessage(lockedUntil?: string): string {
+  const minutes = lockedUntil
+    ? Math.max(1, Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 60_000))
+    : 15;
+  const wait = Number.isFinite(minutes) ? minutes : 15;
+  return `Too many wrong PINs. Please try again in ${wait} minute${wait === 1 ? "" : "s"}, or sign in with an email link instead.`;
+}
