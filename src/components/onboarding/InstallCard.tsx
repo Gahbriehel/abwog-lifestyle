@@ -43,10 +43,10 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
   );
 }
 
-function CloseMessage({ children }: { children?: ReactNode }) {
+function Notice({ children }: { children: ReactNode }) {
   return (
     <p className="rounded-[var(--radius-card)] border border-border bg-surface p-5 text-center text-[15px] text-fg-muted">
-      {children ?? "You can close this page."}
+      {children}
     </p>
   );
 }
@@ -69,18 +69,18 @@ export function InstallCard({ appUrl }: { appUrl: string }) {
 
   if (installed || state === "accepted") {
     return (
-      <CloseMessage>
+      <Notice>
         <CheckCircle2 aria-hidden className="mx-auto mb-2 size-6 text-gold" />
-        The app is on your home screen. You can close this page.
-      </CloseMessage>
+        The app is on your home screen.
+      </Notice>
     );
   }
-  if (context === "installed") return <CloseMessage />;
+  if (context === "installed") return null;
   if (state === "later") {
     return (
-      <CloseMessage>
-        No problem. You can install the app any time from <strong className="text-fg">{appUrl.replace(/^https?:\/\//, "")}</strong>. You can close this page.
-      </CloseMessage>
+      <Notice>
+        No problem. You can install the app any time from <strong className="text-fg">{appUrl.replace(/^https?:\/\//, "")}</strong>.
+      </Notice>
     );
   }
 
@@ -144,7 +144,6 @@ export function InstallCard({ appUrl }: { appUrl: string }) {
       >
         {copied ? "Link copied" : "Copy link"}
       </Button>
-      <p className="mt-3 text-center text-sm text-fg-muted">Otherwise, you can close this page.</p>
     </CardShell>
   );
 }
