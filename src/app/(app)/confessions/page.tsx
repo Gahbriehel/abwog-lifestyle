@@ -74,7 +74,7 @@ export default async function ConfessionsPage({ searchParams }: { searchParams: 
         </nav>
       )}
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2 lg:gap-4 2xl:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:gap-4 2xl:grid-cols-3">
         {list === null ? (
           <ErrorCard title="We couldn't load confessions right now." hint="Please check your connection and try again." />
         ) : list.items.length === 0 ? (

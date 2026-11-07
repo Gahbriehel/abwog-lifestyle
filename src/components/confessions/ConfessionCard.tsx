@@ -9,7 +9,7 @@ export function ConfessionCard({ item }: { item: ConfessionSummary }) {
   return (
     <Link
       href={`/confessions/${item.slug}`}
-      className="group flex h-full items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] hover:border-border-strong/60 hover:shadow-sm"
+      className="group flex h-full min-w-0 items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] hover:border-border-strong/60 hover:shadow-sm"
     >
       <span
         aria-hidden
