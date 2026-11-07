@@ -2,9 +2,8 @@
 
 import { Bell, Share, SquarePlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
-import { PUSH_TOPICS } from "@/lib/push";
+import { ALL_PUSH_TOPICS, PUSH_TOPICS } from "@/lib/push";
 import {
   detectPushAvailability,
   isDeviceSubscribed,
@@ -17,10 +16,23 @@ import {
 } from "@/lib/push-client";
 import type { PushTopic } from "@/lib/types";
 
-function Shell({ children }: { children: React.ReactNode }) {
+/**
+ * Topic choices are hidden for now: turning notifications on subscribes the device to every topic.
+ * Flip this to bring the picker back; the saved-topics plumbing below is already wired up.
+ */
+const SHOW_TOPIC_PICKER = false;
+
+function Shell({ children, onTripleClick }: { children: React.ReactNode; onTripleClick?: () => void }) {
   return (
     <section aria-labelledby="notifications-title" className="rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-xs sm:p-6">
-      <h2 id="notifications-title" className="type-heading flex items-center gap-2">
+      {/* Easter egg: triple-clicking the title sends a test notification (see `test` below). */}
+      <h2
+        id="notifications-title"
+        onClick={(e) => {
+          if (e.detail === 3) onTripleClick?.();
+        }}
+        className="type-heading flex select-none items-center gap-2"
+      >
         <Bell aria-hidden className="size-5 text-primary" />
         Notifications
       </h2>
@@ -34,7 +46,7 @@ export function NotificationsCard() {
   const [availability, setAvailability] = useState<PushAvailability | null>(null);
   const [subscribed, setSubscribed] = useState(false);
   const [denied, setDenied] = useState(false);
-  const [topics, setTopics] = useState<PushTopic[]>(() => PUSH_TOPICS.map((t) => t.id));
+  const [topics, setTopics] = useState<PushTopic[]>(ALL_PUSH_TOPICS);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -47,7 +59,7 @@ export function NotificationsCard() {
       setAvailability(found);
       setSubscribed(on);
       setDenied(found === "ready" && Notification.permission === "denied");
-      setTopics(readSavedTopics());
+      if (SHOW_TOPIC_PICKER) setTopics(readSavedTopics());
     })();
     return () => {
       cancelled = true;
@@ -118,7 +130,7 @@ export function NotificationsCard() {
   };
 
   return (
-    <Shell>
+    <Shell onTripleClick={subscribed && !busy ? test : undefined}>
       <p className="mt-1 text-sm text-fg-muted">Prayer alerts, confessions, scriptures and encouragement on this device.</p>
 
       <div className="mt-4 flex items-center justify-between gap-4">
@@ -150,7 +162,7 @@ export function NotificationsCard() {
         </p>
       )}
 
-      {subscribed && (
+      {subscribed && SHOW_TOPIC_PICKER && (
         <fieldset className="mt-4 border-t border-border pt-4">
           <legend className="type-eyebrow text-fg-muted">Topics</legend>
           <div className="mt-2 grid gap-1">
@@ -169,9 +181,6 @@ export function NotificationsCard() {
               </label>
             ))}
           </div>
-          <Button variant="text" size="sm" className="mt-2 -ml-3" onClick={test} disabled={busy}>
-            Send a test notification
-          </Button>
         </fieldset>
       )}
 

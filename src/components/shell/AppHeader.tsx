@@ -9,6 +9,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { church } from "@/lib/church";
 import { cn } from "@/lib/cn";
 import { ACCOUNT, isActive, menuFor, SIGN_IN } from "./nav";
+import { GuestNotifications } from "./GuestNotifications";
 import { SignInCta } from "./SignInCta";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -55,10 +56,14 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
             Account
           </Link>
         ) : (
-          <Link href="/login" className={buttonClasses("secondary", false, "ml-auto", "sm")}>
-            <LogIn aria-hidden className="size-4" />
-            Sign in
-          </Link>
+          <div className="ml-auto flex items-center gap-1">
+            {/* Members manage notifications on their Account page; guests can still subscribe anonymously. */}
+            <GuestNotifications />
+            <Link href="/login" className={buttonClasses("secondary", false, undefined, "sm")}>
+              <LogIn aria-hidden className="size-4" />
+              Sign in
+            </Link>
+          </div>
         )}
       </div>
 
