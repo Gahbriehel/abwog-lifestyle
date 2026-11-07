@@ -85,7 +85,7 @@ export default async function HomePage() {
         href={church.websiteUrl}
         className="self-center text-sm font-semibold text-primary underline-offset-4 hover:underline lg:self-start"
       >
-        Visit {church.websiteUrl.replace(/^https?:\/\//, "")}
+        Visit church website
       </a>
     </div>
   );
