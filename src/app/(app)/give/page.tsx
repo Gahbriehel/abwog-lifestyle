@@ -36,14 +36,18 @@ function groupByCurrency(accounts: GivingAccount[]) {
 
 export default async function GivePage({ searchParams }: { searchParams: Promise<{ purpose?: string }> }) {
   const { purpose: raw } = await searchParams;
-  const selected = PURPOSES.find((p) => p.id === raw?.toUpperCase()) ?? PURPOSES[0];
 
-  let accounts: GivingAccount[] | null = null;
+  let allAccounts: GivingAccount[] | null = null;
   try {
-    accounts = await getGivingAccounts(selected.id);
+    allAccounts = await getGivingAccounts();
   } catch (error) {
     console.error("giving accounts failed", error instanceof Error ? error.message : error);
   }
+
+  // Only show purposes that have at least one account (all of them if loading failed).
+  const visible = allAccounts ? PURPOSES.filter((p) => allAccounts.some((a) => a.purposes.includes(p.id))) : PURPOSES;
+  const selected = visible.find((p) => p.id === raw?.toUpperCase()) ?? visible[0];
+  const accounts = allAccounts && selected ? allAccounts.filter((a) => a.purposes.includes(selected.id)) : allAccounts;
 
   return (
     <>
@@ -52,9 +56,10 @@ export default async function GivePage({ searchParams }: { searchParams: Promise
         Thank you for sowing into the work of God. Choose what you&apos;re giving towards, then make a transfer from your bank app.
       </p>
 
+      {visible.length > 0 && (
       <nav aria-label="Giving purpose" className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        {PURPOSES.map((p) => {
-          const active = p.id === selected.id;
+        {visible.map((p) => {
+          const active = p.id === selected?.id;
           return (
             <Link
               key={p.id}
@@ -71,6 +76,7 @@ export default async function GivePage({ searchParams }: { searchParams: Promise
           );
         })}
       </nav>
+      )}
 
       {accounts === null ? (
         <div className="mt-6">
