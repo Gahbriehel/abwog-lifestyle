@@ -28,7 +28,12 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
       <div className="page-container flex h-14 items-center gap-2 lg:h-16 lg:max-w-none lg:px-6">
         <button
           type="button"
-          onClick={() => dialog.current?.showModal()}
+          onClick={() => {
+            dialog.current?.showModal();
+            // showModal() focuses the first control (the close button), which iOS paints with a halo.
+            // Park focus on the dialog itself instead.
+            dialog.current?.focus();
+          }}
           aria-label="Open menu"
           className="-ml-2.5 inline-flex size-11 items-center justify-center rounded-full text-fg hover:bg-surface-muted lg:hidden"
         >
@@ -58,23 +63,29 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
       <dialog
         ref={dialog}
         aria-label="Menu"
+        tabIndex={-1}
         onClick={(e) => {
           // A click on the backdrop lands on the <dialog> element itself.
           if (e.target === dialog.current) dialog.current?.close();
         }}
-        className="m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none bg-bg p-0 text-fg backdrop:bg-black/50"
+        className="m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none bg-bg p-0 text-fg outline-none backdrop:bg-black/50"
       >
         <div className="flex h-full flex-col pt-[env(safe-area-inset-top)]">
           <div className="flex h-14 items-center justify-between border-b border-border px-4">
-            <span className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              onClick={() => dialog.current?.close()}
+              aria-label={`${church.shortName} home`}
+              className="flex items-center gap-2.5"
+            >
               <ChurchLogo size={28} />
               <span className="font-serif text-base font-semibold">{church.shortName}</span>
-            </span>
+            </Link>
             <button
               type="button"
               onClick={() => dialog.current?.close()}
               aria-label="Close menu"
-              className="-mr-2 inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-muted"
+              className="-mr-2 inline-flex size-11 items-center justify-center rounded-full outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none hover:bg-surface-muted"
             >
               <X aria-hidden className="size-6" />
             </button>
