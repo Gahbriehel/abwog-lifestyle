@@ -20,7 +20,7 @@ export function ConfessionCard({ item }: { item: ConfessionSummary }) {
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="type-card break-words group-hover:text-primary">{item.title}</span>
         <span className="mt-0.5 text-sm text-fg-muted">{meta.join(" · ")}</span>
-        {item.excerpt && <span className="mt-1 line-clamp-2 text-sm text-fg-muted">{item.excerpt}</span>}
+        {item.excerpt && <span className="mt-1 truncate text-sm text-fg-muted">{item.excerpt}</span>}
       </span>
       {hasAudio(item.audio) && <Headphones aria-label="Has audio" className="size-5 shrink-0 text-primary" />}
       <ChevronRight aria-hidden className="size-5 shrink-0 text-fg-muted" />
