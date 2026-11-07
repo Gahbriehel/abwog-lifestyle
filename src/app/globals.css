@@ -1,56 +1,63 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Hex values are matched by eye to the Magic Patterns
- * screenshots; swap in exact export values when available and re-check AA.
+ * Design tokens. Values are the exact Magic Patterns export (index.css).
+ * Our names map to theirs: fg=ink, fg-muted=ink-muted, border=line,
+ * surface-muted=surface-2, gold=gold-ink (text), gold-fill=gold.
  */
 :root {
-  --bg: #faf6ef;
+  --bg: #fbf7f1;
   --surface: #ffffff;
-  --surface-muted: #f3ece2;
-  --fg: #2b211f;
-  --fg-muted: #6b5f58;
-  --border: #e3d8cb;
-  --border-strong: #9a8b7e; /* ≥3:1 for form controls (WCAG 1.4.11) */
-  --primary: #5b2c5e;
-  --primary-hover: #4b2350;
+  --surface-muted: #f3ece3;
+  --canvas: #ece4da;
+  --fg: #2a1f24;
+  --fg-muted: #6b5d63;
+  --border: #e4dace;
+  --border-strong: #9c8b7e; /* ≥3:1 for form controls (WCAG 1.4.11) */
+  --primary: #5b2a5e;
+  --primary-hover: #4a204d;
   --on-primary: #ffffff;
-  --primary-soft: #f1e3f1;
-  --primary-soft-fg: #5b2c5e;
-  --gold: #855c16; /* text-safe gold: ≥4.5:1 on cream and gold-soft */
-  --gold-fill: #c9973f;
-  --gold-soft: #f5e9d3;
-  --danger: #b42318;
-  --ring: #5b2c5e;
-  --logo-bg: #5b2c5e;
-  /* Feature panels (home welcome). Stays deep plum in both themes. */
-  --hero: #5b2c5e;
+  --primary-soft: #f2e8f1;
+  --primary-soft-fg: #5b2a5e;
+  --gold: #7a5816; /* gold-ink: text-safe gold */
+  --gold-fill: #c49a45;
+  --gold-soft: #f6ecd4;
+  --on-gold: #2a1f24;
+  --danger: #b3261e;
+  --danger-soft: #fcecea;
+  --ring: #5b2a5e;
+  --logo-bg: #5b2a5e;
+  /* Feature panels (home welcome). Light: primary plum. Dark: primary-soft + its text colour. */
+  --hero: #5b2a5e;
   --on-hero: #ffffff;
   color-scheme: light;
 }
 
 /* Applied by the theme script in <head> (see src/lib/theme.ts). */
 :root.dark {
-  --bg: #241e1c;
-  --surface: #2f2826;
-  --surface-muted: #3a3230;
-  --fg: #f6efe8;
-  --fg-muted: #b9aca3;
-  --border: #4a403c;
-  --border-strong: #85766f;
-  --primary: #d4a5d6;
-  --primary-hover: #e0bce1;
-  --on-primary: #2a1a2b;
-  --primary-soft: #43303f;
-  --primary-soft-fg: #ecd3ec;
-  --gold: #d9b061;
-  --gold-fill: #d9b061;
-  --gold-soft: #4a3e2c;
-  --danger: #f59e8b;
-  --ring: #d4a5d6;
-  --logo-bg: #5b2c5e;
-  --hero: #432a46;
-  --on-hero: #f6efe8;
+  --bg: #1f1b19;
+  --surface: #2a2522;
+  --surface-muted: #342e2a;
+  --canvas: #14110f;
+  --fg: #f3ece4;
+  --fg-muted: #b8aca2;
+  --border: #463e38;
+  --border-strong: #7d7066;
+  --primary: #d6aad9;
+  --primary-hover: #e2bee4;
+  --on-primary: #2b122e;
+  --primary-soft: #3d2b3e;
+  --primary-soft-fg: #e8ccea;
+  --gold: #e6c47a;
+  --gold-fill: #d9b25e;
+  --gold-soft: #3d321e;
+  --on-gold: #1f1b19;
+  --danger: #f2a49c;
+  --danger-soft: #48221f;
+  --ring: #d6aad9;
+  --logo-bg: #5b2a5e;
+  --hero: #3d2b3e; /* = primary-soft */
+  --on-hero: #e8ccea; /* = primary-soft-fg */
   color-scheme: dark;
 }
 
@@ -71,6 +78,9 @@
   --color-gold-fill: var(--gold-fill);
   --color-gold-soft: var(--gold-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-canvas: var(--canvas);
+  --color-on-gold: var(--on-gold);
   --color-ring: var(--ring);
   --color-logo-bg: var(--logo-bg);
   --color-hero: var(--hero);

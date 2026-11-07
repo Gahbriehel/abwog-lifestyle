@@ -34,7 +34,7 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
     <li className="flex items-center gap-3 rounded-[var(--radius-control)] bg-surface px-4 py-3">
       <span
         aria-hidden
-        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gold-fill text-sm font-bold text-[#2b211f]"
+        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gold-fill text-sm font-bold text-on-gold"
       >
         {n}
       </span>

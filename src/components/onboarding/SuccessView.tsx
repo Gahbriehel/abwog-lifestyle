@@ -33,7 +33,7 @@ function Celebration() {
         />
       ))}
       <span className="animate-pop-in flex size-24 items-center justify-center rounded-full bg-gold-fill shadow-md ring-8 ring-gold-soft">
-        <Check aria-hidden className="size-11 text-[#2b211f]" strokeWidth={3} />
+        <Check aria-hidden className="size-11 text-on-gold" strokeWidth={3} />
       </span>
     </div>
   );
