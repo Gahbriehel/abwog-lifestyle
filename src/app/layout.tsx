@@ -3,6 +3,7 @@ import { DM_Sans, Fraunces } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { church } from "@/lib/church";
 import { installPromptCaptureScript } from "@/lib/install-prompt";
+import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -30,16 +31,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf6ef" },
-    { media: "(prefers-color-scheme: dark)", color: "#241e1c" },
-  ],
+  // theme-color is set by the theme script (src/lib/theme.ts) so it follows the in-app choice, not just the OS.
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-NG" className={`${fraunces.variable} ${dmSans.variable}`}>
+    <html lang="en-NG" suppressHydrationWarning className={`${fraunces.variable} ${dmSans.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: installPromptCaptureScript }} />
       </head>
       <body>

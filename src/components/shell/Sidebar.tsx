@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { ACCOUNT, isActive, menuFor, type NavItem } from "./nav";
 import { SignInCta } from "./SignInCta";
+import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * Desktop navigation (lg and up), under the top bar. Replaces the bottom tabs, which are hidden
@@ -26,6 +27,9 @@ export function Sidebar({ signedIn }: { signedIn: boolean }) {
           ))}
         </ul>
       </nav>
+      <div className="border-t border-border">
+        <ThemeToggle />
+      </div>
       {!signedIn && <SignInCta />}
     </aside>
   );

@@ -10,6 +10,7 @@ import { church } from "@/lib/church";
 import { cn } from "@/lib/cn";
 import { ACCOUNT, isActive, menuFor, SIGN_IN } from "./nav";
 import { SignInCta } from "./SignInCta";
+import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * Top bar on every width. Below lg it opens a slide-in menu (a native <dialog>, so focus trapping
@@ -114,6 +115,9 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
               })}
             </ul>
           </nav>
+          <div className="border-t border-border">
+            <ThemeToggle />
+          </div>
           {!signedIn && <SignInCta />}
         </div>
       </dialog>
