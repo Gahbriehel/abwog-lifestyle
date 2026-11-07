@@ -90,48 +90,48 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
-  /* 15px reads comfortably on phones; inputs stay at 16px (text-base) so iOS doesn't zoom. */
-  font-size: 15px;
+  /* 14px matches the EA member portal's density; inputs stay at 16px (text-base) so iOS doesn't zoom. */
+  font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
 /*
  * Type scale. One step per level of hierarchy, so screens read the same way:
- *   type-title    page <h1>            24 → 30px
- *   type-heading  section <h2>         18 → 20px
- *   type-card     card / item titles   16 → 17px
+ *   type-title    page <h1>            22 → 28px
+ *   type-heading  section <h2>         17 → 19px
+ *   type-card     card / item titles   15 → 16px
  *   type-eyebrow  small caps labels    12px
- * Body copy is the 15px default; secondary copy is text-sm (14px); meta is text-xs.
+ * Body copy is the 14px default; secondary copy is text-[13px]; meta is text-xs.
  */
 @utility type-title {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-wrap: balance;
   @media (width >= 64rem) {
-    font-size: 1.875rem;
+    font-size: 1.75rem;
   }
 }
 
 @utility type-heading {
   font-family: var(--font-serif);
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   line-height: 1.3;
   font-weight: 600;
   @media (width >= 64rem) {
-    font-size: 1.25rem;
+    font-size: 1.1875rem;
   }
 }
 
 @utility type-card {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   line-height: 1.35;
   font-weight: 600;
   @media (width >= 64rem) {
-    font-size: 1.0625rem;
+    font-size: 1rem;
   }
 }
 

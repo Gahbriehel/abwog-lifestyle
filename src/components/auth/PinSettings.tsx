@@ -72,7 +72,7 @@ export function PinSettings({ hasPin }: { hasPin: boolean }) {
       </div>
 
       {done && !open && (
-        <p role="status" className="mt-3 flex items-center gap-2 text-[15px] text-fg-muted">
+        <p role="status" className="mt-3 flex items-center gap-2 text-sm text-fg-muted">
           <Check aria-hidden className="size-4 text-primary" /> Your PIN is saved.
         </p>
       )}

@@ -21,7 +21,7 @@ function CardShell({ children }: { children: ReactNode }) {
           Stay connected
         </h2>
       </div>
-      <p className="mt-3 text-[15px] text-fg-muted">
+      <p className="mt-3 text-sm text-fg-muted">
         Add the app to your home screen for church updates, devotionals and events.
       </p>
       <div className="mt-4">{children}</div>
@@ -38,14 +38,14 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
       >
         {n}
       </span>
-      <span className="flex flex-wrap items-center gap-1.5 text-[15px] text-fg">{children}</span>
+      <span className="flex flex-wrap items-center gap-1.5 text-sm text-fg">{children}</span>
     </li>
   );
 }
 
 function Notice({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-[var(--radius-card)] border border-border bg-surface p-5 text-center text-[15px] text-fg-muted">
+    <p className="rounded-[var(--radius-card)] border border-border bg-surface p-5 text-center text-sm text-fg-muted">
       {children}
     </p>
   );
@@ -125,7 +125,7 @@ export function InstallCard({ appUrl }: { appUrl: string }) {
   const displayUrl = appUrl.replace(/^https?:\/\//, "");
   return (
     <CardShell>
-      <p className="text-[15px] text-fg">
+      <p className="text-sm text-fg">
         To install the app, open <strong>{displayUrl}</strong> in Chrome or Safari.
       </p>
       <Button

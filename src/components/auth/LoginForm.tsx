@@ -68,7 +68,7 @@ export function LoginForm() {
         <PinField label="PIN" autoComplete="current-password" error={errors.pin?.message} {...register("pin")} />
 
         {notice?.kind === "no-pin" && (
-          <div role="alert" className="rounded-[var(--radius-control)] bg-gold-soft p-4 text-[15px]">
+          <div role="alert" className="rounded-[var(--radius-control)] bg-gold-soft p-4 text-sm">
             <p>You haven&apos;t set a PIN yet. Request an email link to sign in and create one.</p>
             <Link
               href="/profile"

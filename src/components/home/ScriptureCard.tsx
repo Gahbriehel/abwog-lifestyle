@@ -15,10 +15,10 @@ type TabKey = (typeof TABS)[number]["key"];
 function Quote({ scripture }: { scripture: Scripture }) {
   return (
     <figure>
-      <blockquote className="font-serif text-[17px] italic leading-relaxed text-balance">
+      <blockquote className="font-serif text-base italic leading-relaxed text-balance">
         &ldquo;{scripture.text}&rdquo;
       </blockquote>
-      <figcaption className="mt-3 text-[15px] font-semibold text-primary-soft-fg">
+      <figcaption className="mt-3 text-sm font-semibold text-primary-soft-fg">
         {scripture.reference}
         {scripture.translation && <span className="ml-1.5 font-normal text-fg-muted">({scripture.translation})</span>}
         {scripture.givenBy && <span className="mt-0.5 block text-sm font-normal text-fg-muted">{scripture.givenBy}</span>}

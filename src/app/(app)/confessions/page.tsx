@@ -63,7 +63,7 @@ export default async function ConfessionsPage({ searchParams }: { searchParams: 
                 href={pageHref("/confessions", { q, category: c }, 1)}
                 aria-current={selected ? "true" : undefined}
                 className={cn(
-                  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-[15px] font-medium",
+                  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm font-medium",
                   selected ? "border-primary bg-primary text-on-primary" : "border-border-strong bg-surface hover:bg-surface-muted",
                 )}
               >

@@ -79,7 +79,7 @@ export function PillRadioGroup<T extends string>({
             <label
               key={option.value}
               className={cn(
-                "relative flex min-h-12 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 text-[15px] font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
+                "relative flex min-h-12 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
                 selected
                   ? "border-primary bg-primary text-on-primary"
                   : "border-border-strong bg-surface text-fg hover:bg-surface-muted",
@@ -210,7 +210,7 @@ export function CheckCardGroup({
       ref={ref}
       id={id}
       legend={legend}
-      legendClassName="text-[17px] font-semibold leading-snug"
+      legendClassName="text-base font-semibold leading-snug"
       description={description}
       error={error}
       required={required}

@@ -8,7 +8,8 @@ import { ChurchLogo } from "@/components/ui/Brand";
 import { buttonClasses } from "@/components/ui/Button";
 import { church } from "@/lib/church";
 import { cn } from "@/lib/cn";
-import { ACCOUNT, isActive, menuFor } from "./nav";
+import { ACCOUNT, isActive, menuFor, SIGN_IN } from "./nav";
+import { SignInCta } from "./SignInCta";
 
 /**
  * Top bar on every width. Below lg it opens a slide-in menu (a native <dialog>, so focus trapping
@@ -92,7 +93,7 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
           </div>
           <nav aria-label="Menu" className="flex-1 overflow-y-auto p-3">
             <ul className="space-y-1">
-              {menuFor(signedIn).map((item) => {
+              {menuFor(signedIn).filter((item) => signedIn || item.href !== SIGN_IN.href).map((item) => {
                 const active = isActive(item, pathname);
                 const Icon = item.icon;
                 return (
@@ -101,7 +102,7 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
                       href={item.href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex min-h-11 items-center gap-3 rounded-[var(--radius-control)] px-3 text-[15px] font-medium",
+                        "flex min-h-11 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium",
                         active ? "bg-primary-soft text-primary-soft-fg" : "text-fg-muted hover:bg-surface-muted hover:text-fg",
                       )}
                     >
@@ -113,6 +114,7 @@ export function AppHeader({ signedIn }: { signedIn: boolean }) {
               })}
             </ul>
           </nav>
+          {!signedIn && <SignInCta />}
         </div>
       </dialog>
     </header>

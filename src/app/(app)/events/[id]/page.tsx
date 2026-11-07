@@ -85,7 +85,7 @@ export default async function EventPage({ params }: Params) {
           aria-label="Event details"
           className="self-start rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-xs [grid-area:aside] lg:sticky lg:top-26"
         >
-          <ul className="space-y-3 text-[15px]">
+          <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-3">
               <CalendarDays aria-hidden className="mt-0.5 size-[18px] shrink-0 text-gold" />
               <span>{formatEventWhen(event.startDate, event.endDate)}</span>

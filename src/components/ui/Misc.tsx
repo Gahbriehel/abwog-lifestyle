@@ -68,7 +68,7 @@ export function Toast({ message, onDismiss }: { message: string | null; onDismis
       {message && (
         <div className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-[var(--radius-control)] bg-fg px-4 py-3 text-bg shadow-lg">
           <AlertCircle aria-hidden className="mt-0.5 size-5 shrink-0" />
-          <p className="flex-1 text-[15px]">{message}</p>
+          <p className="flex-1 text-sm">{message}</p>
           <button type="button" onClick={onDismiss} className="-m-1 rounded p-1" aria-label="Dismiss">
             <X aria-hidden className="size-5" />
           </button>

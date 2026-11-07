@@ -68,7 +68,7 @@ function WhatsAppCard({ name, phone, website }: { name: string; phone: string; w
           <p className="text-sm text-fg-muted">{formatForDisplay(phone)}</p>
         </div>
       </div>
-      <p className="mt-3 text-[15px] text-fg-muted">
+      <p className="mt-3 text-sm text-fg-muted">
         Save <strong className="text-fg">{name}</strong> in your contacts so you get birthday
         wishes and check-ins from the church on WhatsApp.
       </p>
@@ -85,7 +85,7 @@ function WhatsAppCard({ name, phone, website }: { name: string; phone: string; w
         href={waMeUrl(phone, `Hello ${name}!`)}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-1 flex min-h-11 items-center justify-center text-[15px] font-semibold text-primary underline-offset-4 hover:underline"
+        className="mt-1 flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
       >
         Say hi on WhatsApp
       </a>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { ACCOUNT, isActive, menuFor, type NavItem } from "./nav";
+import { SignInCta } from "./SignInCta";
 
 /**
  * Desktop navigation (lg and up), under the top bar. Replaces the bottom tabs, which are hidden
@@ -25,6 +26,7 @@ export function Sidebar({ signedIn }: { signedIn: boolean }) {
           ))}
         </ul>
       </nav>
+      {!signedIn && <SignInCta />}
     </aside>
   );
 }
@@ -36,7 +38,7 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex min-h-10 items-center gap-3 rounded-[var(--radius-control)] px-3 text-[15px] font-medium transition-colors",
+        "flex min-h-10 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium transition-colors",
         active ? "bg-primary-soft text-primary-soft-fg" : "text-fg-muted hover:bg-surface-muted hover:text-fg",
       )}
     >

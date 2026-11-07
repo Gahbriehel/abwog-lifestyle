@@ -127,7 +127,7 @@ function Confirmation({
         <p className="type-eyebrow mt-4 text-fg-muted">Registration number</p>
         <p className="font-mono text-lg font-semibold tracking-wider">{registration.registrationNumber}</p>
         {registration.team && (
-          <p className="mt-3 text-[15px]">
+          <p className="mt-3 text-sm">
             Your team: <span className="font-semibold">{registration.team.name}</span>
           </p>
         )}

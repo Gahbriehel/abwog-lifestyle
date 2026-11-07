@@ -146,7 +146,7 @@ export function SpeechPlayer({ confessionId, chunks, onActive }: Props) {
   if (supported === null) return <div aria-hidden className="h-28" />;
   if (supported === false) {
     return (
-      <p className="rounded-[var(--radius-control)] bg-surface-muted px-4 py-3 text-center text-[15px] text-fg-muted">
+      <p className="rounded-[var(--radius-control)] bg-surface-muted px-4 py-3 text-center text-sm text-fg-muted">
         Reading aloud isn&apos;t available in this browser. You can read the confession below.
       </p>
     );

@@ -12,8 +12,8 @@ import { AudioPlayer } from "./AudioPlayer";
 import { SpeechPlayer } from "./SpeechPlayer";
 
 const SIZE_KEY = "confession-text-size";
-// Default matches the 15px body copy; the buttons step up for easier reading.
-const SIZES = ["text-[15px]", "text-[17px]", "text-xl"] as const;
+// Default matches the 14px body copy; the buttons step up for easier reading.
+const SIZES = ["text-sm", "text-base", "text-xl"] as const;
 
 interface Props {
   id: string;
@@ -74,14 +74,14 @@ export function ConfessionReader({
 
   return (
     <div className="w-full lg:max-w-2xl">
-      <Link href="/confessions" className="-ml-2 mb-4 inline-flex min-h-11 items-center gap-1 self-start px-2 text-[15px] font-semibold text-primary">
+      <Link href="/confessions" className="-ml-2 mb-4 inline-flex min-h-11 items-center gap-1 self-start px-2 text-sm font-semibold text-primary">
         <ChevronLeft aria-hidden className="size-5" />
         All confessions
       </Link>
 
       <p className="text-sm text-fg-muted">{meta.join(" · ")}</p>
       <h1 className="type-title mt-1">{title}</h1>
-      {scriptureRef && <p className="mt-1 text-[15px] font-medium text-gold">{scriptureRef}</p>}
+      {scriptureRef && <p className="mt-1 text-sm font-medium text-gold">{scriptureRef}</p>}
 
       <section aria-label="Listen" className="mt-5 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-xs sm:p-5">
         <h2 className="type-card mb-3 flex items-center gap-2">
@@ -158,7 +158,7 @@ export function ConfessionReader({
                 <ChevronLeft aria-hidden className="size-3.5" />
                 Previous
               </span>
-              <span className="mt-0.5 line-clamp-2 text-[15px] font-medium">{previous.title}</span>
+              <span className="mt-0.5 line-clamp-2 text-sm font-medium">{previous.title}</span>
             </Link>
           ) : (
             <span />
@@ -169,7 +169,7 @@ export function ConfessionReader({
                 Next
                 <ChevronRight aria-hidden className="size-3.5" />
               </span>
-              <span className="mt-0.5 line-clamp-2 text-[15px] font-medium">{next.title}</span>
+              <span className="mt-0.5 line-clamp-2 text-sm font-medium">{next.title}</span>
             </Link>
           ) : (
             <span />

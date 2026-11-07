@@ -11,7 +11,7 @@ const base =
 /** sm 36px for toolbars and inline actions; md 44px (touch target) is the default; lg 48px for the one primary action on a form. */
 const sizes: Record<Size, string> = {
   sm: "min-h-9 px-3.5 text-sm",
-  md: "min-h-11 px-5 text-[15px]",
+  md: "min-h-11 px-5 text-sm",
   lg: "min-h-12 px-6 text-base",
 };
 

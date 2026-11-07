@@ -143,7 +143,7 @@ export function AudioPlayer({ confessionId, title, subtitle, audio, onFailed }: 
               aria-checked={voice === v}
               onClick={() => chooseVoice(v)}
               className={cn(
-                "min-h-10 rounded-full px-3 text-[15px] font-semibold capitalize transition-colors",
+                "min-h-10 rounded-full px-3 text-sm font-semibold capitalize transition-colors",
                 voice === v ? "bg-surface text-primary shadow-sm" : "text-fg-muted hover:text-fg",
               )}
             >
