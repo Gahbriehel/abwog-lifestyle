@@ -247,3 +247,23 @@ export interface CurrentScriptures {
   week: Scripture | null;
   year: Scripture | null;
 }
+
+// ── Push notifications and the Night Prayer. See docs/dove-notifications.md ─
+
+export type PushTopic = "night-prayer" | "confessions" | "scriptures" | "encouragement";
+
+export type NightPrayerStatus = "upcoming" | "live" | "ended" | "cancelled" | "inactive";
+
+/** `GET /night-prayer/next`. Every instant is a UTC ISO string; `now` is the server's clock. */
+export interface NightPrayerNext {
+  status: NightPrayerStatus;
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  meetUrl: string | null;
+  startsAt: string | null;
+  joinOpensAt: string | null;
+  endsAt: string | null;
+  note: string | null;
+  now: string;
+}

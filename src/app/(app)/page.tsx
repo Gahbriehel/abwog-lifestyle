@@ -1,7 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { EventCard } from "@/components/events/EventCard";
+import { NightPrayerCard } from "@/components/home/NightPrayerCard";
 import { ScriptureCard } from "@/components/home/ScriptureCard";
+import { NotificationsCard } from "@/components/notifications/NotificationsCard";
 import { InstallCard } from "@/components/onboarding/InstallCard";
 import { appUrl } from "@/lib/app-url";
 import { church } from "@/lib/church";
@@ -54,6 +56,8 @@ export default async function HomePage() {
         )}
       </header>
 
+      <NightPrayerCard />
+
       <ScriptureCard scriptures={scriptures} />
 
       <section aria-labelledby="upcoming">
@@ -80,6 +84,9 @@ export default async function HomePage() {
       </section>
 
       <InstallCard appUrl={appUrl()} />
+
+      {/* Members manage this on their Account page; guests can still subscribe anonymously. */}
+      {!person && <NotificationsCard />}
 
       <a
         href={church.websiteUrl}

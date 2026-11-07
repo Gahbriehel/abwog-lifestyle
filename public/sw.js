@@ -58,3 +58,52 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+// ── Web Push (sent by Dove, see docs/dove-notifications.md) ────────────────
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    return;
+  }
+  const options = {
+    body: payload.body || "",
+    icon: payload.icon || "/icons/icon-192.png",
+    // `tag` makes a newer notification of the same kind replace the earlier one.
+    tag: payload.tag || "general",
+    renotify: true,
+    data: { url: payload.url || (payload.data && payload.data.url) || "/", topic: payload.topic },
+  };
+  if (payload.badge) options.badge = payload.badge;
+  event.waitUntil(self.registration.showNotification(payload.title || "Amazing Grace", options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  // Only ever open this app's own pages, whatever the payload says.
+  let target = new URL("/", self.location.origin);
+  try {
+    const requested = new URL((event.notification.data && event.notification.data.url) || "/", self.location.origin);
+    if (requested.origin === self.location.origin) target = requested;
+  } catch {
+    // keep the home page
+  }
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (windows) => {
+      const existing = windows.find((client) => "focus" in client);
+      if (existing) {
+        const focused = await existing.focus();
+        try {
+          return await (focused || existing).navigate(target.href);
+        } catch {
+          // navigate() can be refused; fall through to a fresh window.
+        }
+      }
+      return self.clients.openWindow(target.href);
+    }),
+  );
+});

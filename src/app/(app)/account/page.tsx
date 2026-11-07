@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PinSettings } from "@/components/auth/PinSettings";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { NotificationsCard } from "@/components/notifications/NotificationsCard";
 import { buttonClasses } from "@/components/ui/Button";
 import { Badge, Chip } from "@/components/ui/Misc";
 import { church, STATUS_LABELS } from "@/lib/church";
@@ -45,6 +46,7 @@ export default async function AccountPage() {
       </section>
 
       <div className="mt-4 space-y-4">
+        <NotificationsCard />
         <PinSettings hasPin={person.hasPin} />
         <Link href="/profile" className={buttonClasses("secondary", true)}>
           Update my details

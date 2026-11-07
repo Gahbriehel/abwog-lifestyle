@@ -34,6 +34,8 @@
 //                               (no audio, so the phone voice reads them), hidden-draft (404)
 //   POST /confessions/:id/listen   204, and the count goes up
 //   GET  /scriptures/current    { week, year }; set STUB_NO_SCRIPTURE=1 to get nulls
+//   GET  /night-prayer/next     STUB_NIGHT_PRAYER=upcoming (default) | live | ended | cancelled | inactive
+//   POST /push/subscribe, /push/unsubscribe, /push/test-self, PATCH /push/topics   accepted, nothing is stored or sent
 //   GET  /public/confession-audio/...   a 6-second silent MP3, with Range support
 
 const PORT = Number(process.env.STUB_PORT ?? 4010);
@@ -548,6 +550,41 @@ Bun.serve({
     }
 
     if (req.method === "GET" && url.pathname.startsWith("/public/confession-audio/")) return serveSilence(req);
+
+    if (req.method === "GET" && url.pathname === "/api/v1/night-prayer/next") {
+      const mode = process.env.STUB_NIGHT_PRAYER ?? "upcoming";
+      const now = Date.now();
+      const minutes = (n: number) => new Date(now + n * 60_000).toISOString();
+      const base = {
+        title: "Night Prayer",
+        description: "Join us every night as we end the day in prayer.",
+        imageUrl: null,
+        meetUrl: "https://meet.google.com/abc-defg-hij",
+        note: null,
+        now: new Date(now).toISOString(),
+      };
+      const times: Record<string, object> = {
+        upcoming: { status: "upcoming", startsAt: minutes(12), joinOpensAt: minutes(2), endsAt: minutes(72) },
+        live: { status: "live", startsAt: minutes(-5), joinOpensAt: minutes(-15), endsAt: minutes(55) },
+        ended: { status: "ended", startsAt: minutes(60 * 22), joinOpensAt: minutes(60 * 22 - 10), endsAt: minutes(60 * 23) },
+        cancelled: { status: "cancelled", startsAt: minutes(60), joinOpensAt: minutes(50), endsAt: minutes(120), note: "No prayer tonight. God bless you." },
+      };
+      if (mode === "inactive") {
+        return ok(
+          { status: "inactive", title: null, description: null, imageUrl: null, meetUrl: null, startsAt: null, joinOpensAt: null, endsAt: null, note: null, now: base.now },
+          "Night prayer retrieved successfully",
+        );
+      }
+      return ok({ ...base, ...(times[mode] ?? times.upcoming) }, "Night prayer retrieved successfully");
+    }
+
+    if (url.pathname.startsWith("/api/v1/push/")) {
+      const body = (await req.json().catch(() => ({}))) as { endpoint?: string; subscription?: { endpoint?: string } };
+      if (!(body.endpoint ?? body.subscription?.endpoint)?.startsWith("https://")) {
+        return fail(400, "endpoint must be an https URL", "VALIDATION_ERROR");
+      }
+      return ok({ subscribed: true }, "OK");
+    }
 
     if (req.method === "GET" && url.pathname === "/api/v1/scriptures/current") {
       if (process.env.STUB_NO_SCRIPTURE) return ok({ week: null, year: null }, "Current scriptures retrieved successfully");

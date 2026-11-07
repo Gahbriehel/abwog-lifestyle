@@ -11,6 +11,8 @@ import type {
   MemberLoginPayload,
   MemberLoginResult,
   MemberSession,
+  NightPrayerNext,
+  PushTopic,
   ProfileBootstrap,
   RegisterPayload,
   RegisterResult,
@@ -185,4 +187,34 @@ export async function recordConfessionListen(id: string): Promise<void> {
 /** The scripture for this week and for this year. See docs/dove-scripture.md. */
 export function getCurrentScriptures(): Promise<CurrentScriptures> {
   return doveFetch<CurrentScriptures>("/scriptures/current");
+}
+
+// ── Push notifications and Night Prayer (public). See docs/dove-notifications.md ─
+
+export function getNightPrayerNext(): Promise<NightPrayerNext> {
+  return doveFetch<NightPrayerNext>("/night-prayer/next");
+}
+
+/** Anonymous devices are fine. `accessToken` links the device to a signed-in member. */
+export async function subscribePush(
+  subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
+  topics: PushTopic[],
+  accessToken?: string,
+): Promise<void> {
+  await doveFetch("/push/subscribe", {
+    method: "POST",
+    body: JSON.stringify({ subscription, topics, ...(accessToken ? { memberToken: accessToken } : {}) }),
+  });
+}
+
+export async function unsubscribePush(endpoint: string): Promise<void> {
+  await doveFetch("/push/unsubscribe", { method: "POST", body: JSON.stringify({ endpoint }) });
+}
+
+export async function updatePushTopics(endpoint: string, topics: PushTopic[]): Promise<void> {
+  await doveFetch("/push/topics", { method: "PATCH", body: JSON.stringify({ endpoint, topics }) });
+}
+
+export async function sendPushTest(endpoint: string): Promise<void> {
+  await doveFetch("/push/test-self", { method: "POST", body: JSON.stringify({ endpoint }) });
 }
