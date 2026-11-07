@@ -1,7 +1,7 @@
 // Minimal service worker: offline fallback + cached static assets.
 // Profile pages, the home page (it shows the signed-in member's details) and
 // server actions carry personal data and secure tokens, so they are never cached.
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `static-${VERSION}`;
 const PAGES_CACHE = `pages-${VERSION}`; // kept so old page caches get purged on activate
 const PRECACHE = ["/offline.html", "/brand/icon-gold.png", "/icons/icon-192.png"];
@@ -94,13 +94,19 @@ self.addEventListener("notificationclick", (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (windows) => {
+      // iOS (Home Screen app) rejects focus() and has no navigate(); an unhandled rejection
+      // here used to abort the handler, so the tap did nothing. Try each step, and fall back
+      // to openWindow(), which iOS does support from a notification tap.
       const existing = windows.find((client) => "focus" in client);
       if (existing) {
-        const focused = await existing.focus();
         try {
-          return await (focused || existing).navigate(target.href);
+          const focused = (await existing.focus()) || existing;
+          if ("navigate" in focused) {
+            await focused.navigate(target.href);
+            return;
+          }
         } catch {
-          // navigate() can be refused; fall through to a fresh window.
+          // fall through to a fresh window
         }
       }
       return self.clients.openWindow(target.href);
