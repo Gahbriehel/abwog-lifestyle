@@ -6,12 +6,14 @@ import { maskEmail } from "./mask";
 import { isWeakPin, validateNewPin } from "./pin";
 import { formatForDisplay, toE164, toInputValue } from "./phone";
 import {
+  addRelativeSchema,
   changePinSchemaFor,
   loginSchema,
   newPinSchema,
   profileSchema,
   profileSchemaFor,
   registerSchema,
+  toAddRelativePayload,
   toIdentifier,
   toRegisterPayload,
   toUpdatePayload,
@@ -125,6 +127,86 @@ describe("profileSchema", () => {
 
   it("requires names", () => {
     expect(profileSchema.safeParse({ ...base, lastName: "  " }).success).toBe(false);
+  });
+
+  it("needs an email or a phone, but not both", () => {
+    const neither = profileSchema.safeParse({ ...base, email: "", phone: "" });
+    expect(neither.success).toBe(false);
+    expect(neither.error?.issues[0].path).toEqual(["email"]);
+    expect(profileSchema.safeParse({ ...base, email: "", phone: "803 456 7890" }).success).toBe(true);
+    expect(profileSchema.safeParse({ ...base, email: "a@b.co", phone: "" }).success).toBe(true);
+  });
+});
+
+describe("addRelativeSchema", () => {
+  const base = {
+    firstName: "Tunde",
+    lastName: "Adeyemi",
+    relationship: "SPOUSE" as const,
+    relationshipNote: "",
+    gender: "" as const,
+    dateOfBirth: "",
+    email: "Tunde@Example.com",
+    phone: "",
+  };
+
+  it("accepts a name, a relationship and an email", () => {
+    expect(addRelativeSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("accepts a phone alone", () => {
+    expect(addRelativeSchema.safeParse({ ...base, email: "", phone: "0803 456 7890" }).success).toBe(true);
+  });
+
+  it("requires an email or a phone", () => {
+    const result = addRelativeSchema.safeParse({ ...base, email: "", phone: "" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].path).toEqual(["email"]);
+  });
+
+  it("requires names and a relationship", () => {
+    expect(addRelativeSchema.safeParse({ ...base, firstName: " " }).success).toBe(false);
+    expect(addRelativeSchema.safeParse({ ...base, lastName: "" }).success).toBe(false);
+    expect(addRelativeSchema.safeParse({ ...base, relationship: "" }).success).toBe(false);
+    expect(addRelativeSchema.safeParse({ ...base, relationship: "COUSIN" }).success).toBe(false);
+  });
+
+  it("rejects a bad phone, a bad email and a future birth date", () => {
+    expect(addRelativeSchema.safeParse({ ...base, phone: "80345" }).success).toBe(false);
+    expect(addRelativeSchema.safeParse({ ...base, email: "nope" }).success).toBe(false);
+    expect(addRelativeSchema.safeParse({ ...base, dateOfBirth: "2999-01-01" }).success).toBe(false);
+  });
+});
+
+describe("toAddRelativePayload", () => {
+  const values = (over: object = {}) =>
+    addRelativeSchema.parse({
+      firstName: " Tunde ",
+      lastName: "Adeyemi",
+      relationship: "SPOUSE",
+      relationshipNote: "",
+      gender: "",
+      dateOfBirth: "",
+      email: "Tunde@Example.com",
+      phone: "",
+      ...over,
+    });
+
+  it("lower-cases the email and omits empty optionals", () => {
+    expect(toAddRelativePayload(values())).toEqual({
+      firstName: "Tunde",
+      lastName: "Adeyemi",
+      relationship: "SPOUSE",
+      email: "tunde@example.com",
+    });
+  });
+
+  it("sends E.164 phones and keeps the note only for OTHER", () => {
+    expect(toAddRelativePayload(values({ email: "", phone: "0803 456 7890" })).phone).toBe("+2348034567890");
+    expect(toAddRelativePayload(values({ relationshipNote: "Cousin" })).relationshipNote).toBeUndefined();
+    expect(
+      toAddRelativePayload(values({ relationship: "OTHER", relationshipNote: "Cousin" })).relationshipNote,
+    ).toBe("Cousin");
   });
 });
 

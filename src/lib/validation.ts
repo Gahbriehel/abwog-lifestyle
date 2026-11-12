@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { validateNewPin } from "./pin";
 import { toE164 } from "./phone";
-import type { MembershipStatus, RegisterPayload, UpdateProfilePayload } from "./types";
+import type { AddRelativePayload, MembershipStatus, RegisterPayload, UpdateProfilePayload } from "./types";
 
 export const claimSchema = z.object({
   email: z
@@ -52,9 +52,8 @@ const profileObject = z
     email: z
       .string()
       .trim()
-      .min(1, "Please enter your email address.")
-      .email("Please enter a valid email address.")
-      .max(255, "That email address is too long."),
+      .max(255, "That email address is too long.")
+      .refine((v) => v === "" || z.email().safeParse(v).success, "Please enter a valid email address."),
     phone: z
       .string()
       .trim()
@@ -75,6 +74,14 @@ const profileObject = z
  */
 export function profileSchemaFor({ departmentsAvailable }: { departmentsAvailable: boolean }) {
   return profileObject.superRefine((values, ctx) => {
+    // Everyone needs a way back to their profile: an email or a phone (people added by a relative may only have a phone).
+    if (values.email === "" && values.phone === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: "Please enter an email address or a phone number.",
+      });
+    }
     if (
       departmentsAvailable &&
       DEPARTMENTS_REQUIRED.includes(values.membershipStatus) &&
@@ -100,7 +107,7 @@ export function toUpdatePayload(values: ProfileValues): UpdateProfilePayload {
   return {
     firstName: values.firstName,
     lastName: values.lastName,
-    email: values.email.toLowerCase(),
+    ...(values.email ? { email: values.email.toLowerCase() } : {}),
     ...(phone ? { phone } : {}),
     ...(values.gender ? { gender: values.gender } : {}),
     ...(values.dateOfBirth ? { dateOfBirth: values.dateOfBirth } : {}),
@@ -201,5 +208,65 @@ export function toRegisterPayload(values: RegisterValues): RegisterPayload {
     lastName: values.lastName,
     ...(values.email ? { email: values.email.toLowerCase() } : {}),
     ...(phone ? { phone } : {}),
+  };
+}
+
+export const RELATIONSHIP_OPTIONS = [
+  { value: "SPOUSE", label: "Spouse" },
+  { value: "CHILD", label: "Child" },
+  { value: "PARENT", label: "Parent" },
+  { value: "SIBLING", label: "Sibling" },
+  { value: "OTHER", label: "Other relative" },
+] as const;
+
+export const RELATIONSHIP_LABELS: Record<string, string> = Object.fromEntries(
+  RELATIONSHIP_OPTIONS.map((o) => [o.value, o.label]),
+);
+
+/** Add a family member: a name, how they are related, and an email or a phone so they can reach their own profile later. */
+export const addRelativeSchema = z
+  .object({
+    firstName: z.string().trim().min(1, "Please enter their first name.").max(100, "That's a bit long. Please shorten it."),
+    lastName: z.string().trim().min(1, "Please enter their last name.").max(100, "That's a bit long. Please shorten it."),
+    relationship: z.enum(["SPOUSE", "PARENT", "CHILD", "SIBLING", "OTHER"], {
+      error: "Please choose how they are related to you.",
+    }),
+    relationshipNote: z.string().trim().max(100, "Please keep this under 100 characters."),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"]).or(z.literal("")),
+    dateOfBirth: z.string().refine((v) => v === "" || isPastDate(v), "Please choose a valid date."),
+    email: z
+      .string()
+      .trim()
+      .max(255, "That email address is too long.")
+      .refine((v) => v === "" || z.email().safeParse(v).success, "Please enter a valid email address."),
+    phone: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || toE164(v) !== null, "That number doesn't look right. Please check it."),
+  })
+  .superRefine((values, ctx) => {
+    if (values.email === "" && values.phone === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: "Please enter an email address or a phone number so they can reach their profile later.",
+      });
+    }
+  });
+
+export type AddRelativeInput = z.input<typeof addRelativeSchema>;
+export type AddRelativeValues = z.output<typeof addRelativeSchema>;
+
+export function toAddRelativePayload(values: AddRelativeValues): AddRelativePayload {
+  const phone = values.phone ? toE164(values.phone) : null;
+  return {
+    firstName: values.firstName,
+    lastName: values.lastName,
+    relationship: values.relationship,
+    ...(values.relationship === "OTHER" && values.relationshipNote ? { relationshipNote: values.relationshipNote } : {}),
+    ...(values.email ? { email: values.email.toLowerCase() } : {}),
+    ...(phone ? { phone } : {}),
+    ...(values.gender ? { gender: values.gender } : {}),
+    ...(values.dateOfBirth ? { dateOfBirth: values.dateOfBirth } : {}),
   };
 }

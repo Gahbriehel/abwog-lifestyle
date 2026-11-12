@@ -163,7 +163,7 @@ export function ProfileForm({
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
-              required
+              hint="Add an email or a phone number, so you can always get back to your profile."
               error={errors.email?.message}
               {...register("email")}
             />

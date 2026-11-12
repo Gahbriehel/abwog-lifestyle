@@ -99,7 +99,9 @@ export type ProfileErrorCode =
   | LinkProblemCode
   | "NAMES_REQUIRED"
   | "DEPARTMENT_REQUIRED"
-  | "PIN_TOO_WEAK";
+  | "PIN_TOO_WEAK"
+  | "CONTACT_ALREADY_REGISTERED"
+  | "CONTACT_REQUIRED";
 
 /** Codes on the member PIN endpoints (login and change PIN). */
 export type PinErrorCode =
@@ -266,4 +268,41 @@ export interface NightPrayerNext {
   endsAt: string | null;
   note: string | null;
   now: string;
+}
+
+
+// ── Family links (see docs/dove-family-links.md) ───────────────────────────
+
+export type RelationshipType = "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "OTHER";
+
+export interface Relative {
+  relationshipId: string;
+  person: { id: string; firstName: string; lastName: string };
+  /** What this person is to the signed-in member. */
+  relationship: RelationshipType;
+  relationshipNote: string | null;
+  addedByMe: boolean;
+  /** True once they have set a PIN, i.e. they have taken over their own profile. */
+  claimed: boolean;
+  maskedEmail: string | null;
+  maskedPhone: string | null;
+  canSendClaimLink: boolean;
+}
+
+export interface AddRelativePayload {
+  firstName: string;
+  lastName: string;
+  relationship: RelationshipType;
+  relationshipNote?: string;
+  email?: string;
+  phone?: string;
+  gender?: Gender;
+  dateOfBirth?: string;
+}
+
+export interface RelativeClaimLink {
+  url: string;
+  whatsappUrl: string;
+  /** ISO timestamp. */
+  expiresAt: string;
 }

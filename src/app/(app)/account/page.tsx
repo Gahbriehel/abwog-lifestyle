@@ -3,11 +3,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PinSettings } from "@/components/auth/PinSettings";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { FamilyCard } from "@/components/family/FamilyCard";
 import { NotificationsCard } from "@/components/notifications/NotificationsCard";
 import { buttonClasses } from "@/components/ui/Button";
 import { Badge, Chip } from "@/components/ui/Misc";
 import { church, STATUS_LABELS } from "@/lib/church";
-import { loadSession } from "@/lib/member";
+import { loadRelatives, loadSession } from "@/lib/member";
 
 export const metadata: Metadata = { title: "Account", robots: { index: false } };
 
@@ -15,6 +16,7 @@ export default async function AccountPage() {
   const session = await loadSession();
   if (!session) redirect("/login");
   const { person } = session;
+  const relatives = await loadRelatives();
 
   return (
     <div className="flex w-full max-w-xl flex-col">
@@ -48,6 +50,7 @@ export default async function AccountPage() {
       <div className="mt-4 space-y-4">
         <NotificationsCard />
         <PinSettings hasPin={person.hasPin} />
+        <FamilyCard relatives={relatives} />
         <Link href="/profile" className={buttonClasses("secondary", true)}>
           Update my details
         </Link>

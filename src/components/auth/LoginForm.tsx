@@ -13,7 +13,8 @@ import { loginSchema, type LoginValues } from "@/lib/validation";
 
 type Notice = { kind: "no-pin" } | { kind: "locked" | "error"; message: string };
 
-export function LoginForm() {
+/** `whatsappUrl`: the church's WhatsApp chat with a prefilled request, for people who have a phone but no email. */
+export function LoginForm({ whatsappUrl }: { whatsappUrl?: string }) {
   const [pending, startTransition] = useTransition();
   const [notice, setNotice] = useState<Notice | null>(null);
   const {
@@ -76,6 +77,18 @@ export function LoginForm() {
             >
               Email me a link
             </Link>
+            {whatsappUrl && (
+              <p className="mt-3">
+                No email?{" "}
+                <a
+                  href={whatsappUrl}
+                  className="font-semibold text-primary underline-offset-4 hover:underline"
+                >
+                  Message us on WhatsApp
+                </a>{" "}
+                and we&apos;ll send you a link.
+              </p>
+            )}
           </div>
         )}
         {(notice?.kind === "locked" || notice?.kind === "error") && (
@@ -93,6 +106,11 @@ export function LoginForm() {
         <ButtonLink href="/profile" variant="text">
           Forgot your PIN? Sign in with email
         </ButtonLink>
+        {whatsappUrl && (
+          <ButtonLink href={whatsappUrl} variant="text">
+            No email? Ask us for a link on WhatsApp
+          </ButtonLink>
+        )}
         <ButtonLink href="/" variant="text">
           Back to home
         </ButtonLink>

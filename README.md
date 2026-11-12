@@ -63,6 +63,7 @@ To use the real Dove API instead, set `DOVE_API_URL` in `.env.local`, e.g. `http
 |---|---|---|
 | `DOVE_API_URL` | Server only | `https://api.abwog.org/api/v1` |
 | `APP_URL` | Metadata and install instructions | `https://app.abwog.org` |
+| `CHURCH_WHATSAPP_NUMBER` | Server only, optional. Shows "Message us on WhatsApp" on sign-in for people without an email | the church WhatsApp Business number |
 
 Dove must have `PROFILE_URL=https://app.abwog.org/profile` so emailed links open this app (Dove A1).
 

@@ -21,6 +21,14 @@
 // A wrong PIN always answers "4 attempts remaining" (the stub keeps no lockout state).
 // Sessions are in memory: GET /profile/me, PUT /profile/me/pin, POST /profile/logout.
 //
+// Family links (member session required; see docs/dove-family-links.md):
+//   GET    /profile/me/relatives                       Sarah starts with a spouse (on the app) and a child (not set up)
+//   POST   /profile/me/relatives                       email or phone required (400 CONTACT_REQUIRED); taken contact
+//                                                      details (sarah.adeyemi@example.com, 0803 456 7890, john.okafor@example.com,
+//                                                      newcomer@example.com) → 409 CONTACT_ALREADY_REGISTERED; first name "Fail" → 500
+//   DELETE /profile/me/relatives/:relationshipId       removes the link only
+//   POST   /profile/me/relatives/:personId/claim-link  wa.me link; 409 ALREADY_CLAIMED, 409 NO_PHONE, 403 NOT_CREATOR
+//
 // Public content (dates are relative to when the stub starts, so they are always upcoming):
 //   GET  /events (?category, ?search, ?page, ?limit)   published events, past ones included like Dove
 //   GET  /events/:id
@@ -108,6 +116,77 @@ const people: Record<string, Person> = {
     hasPin: false,
   },
 };
+
+// ── Family links ───────────────────────────────────────────────────────────
+interface StubRelative {
+  relationshipId: string;
+  ownerKey: string;
+  person: { id: string; firstName: string; lastName: string };
+  relationship: string;
+  relationshipNote: string | null;
+  addedByMe: boolean;
+  claimed: boolean;
+  email: string | null;
+  phone: string | null;
+}
+
+const relatives: StubRelative[] = [
+  {
+    relationshipId: "rel-1",
+    ownerKey: "member-sarah",
+    person: { id: "p-tunde", firstName: "Tunde", lastName: "Adeyemi" },
+    relationship: "SPOUSE",
+    relationshipNote: null,
+    addedByMe: false,
+    claimed: true,
+    email: "tunde.adeyemi@example.com",
+    phone: "+2348098765432",
+  },
+  {
+    relationshipId: "rel-2",
+    ownerKey: "member-sarah",
+    person: { id: "p-ada", firstName: "Ada", lastName: "Adeyemi" },
+    relationship: "CHILD",
+    relationshipNote: null,
+    addedByMe: true,
+    claimed: false,
+    email: null,
+    phone: "+2348071112222",
+  },
+];
+
+const maskPhone = (phone: string) => `•••• ••• ${phone.slice(-4)}`;
+const maskStubEmail = (email: string) => `${email[0]}•••@${email.split("@")[1]}`;
+
+function relativeView(r: StubRelative) {
+  return {
+    relationshipId: r.relationshipId,
+    person: r.person,
+    relationship: r.relationship,
+    relationshipNote: r.relationshipNote,
+    addedByMe: r.addedByMe,
+    claimed: r.claimed,
+    maskedEmail: r.email ? maskStubEmail(r.email) : null,
+    maskedPhone: r.phone ? maskPhone(r.phone) : null,
+    canSendClaimLink: r.addedByMe && !r.claimed && Boolean(r.phone),
+  };
+}
+
+const lastTen = (value: unknown) => String(value ?? "").replace(/\D/g, "").slice(-10);
+
+/** Contact details that already belong to someone (the stub people and anyone added in this run). */
+function contactTaken(email?: string, phone?: string): boolean {
+  const emails = [...Object.values(people).map((p) => p.email), ...relatives.map((r) => r.email)]
+    .filter(Boolean)
+    .map((e) => String(e).toLowerCase());
+  const phones = [...Object.values(people).map((p) => p.phone), ...relatives.map((r) => r.phone)]
+    .filter(Boolean)
+    .map(lastTen);
+  return (
+    (Boolean(email) && emails.includes(email!.trim().toLowerCase())) ||
+    (Boolean(phone) && lastTen(phone).length === 10 && phones.includes(lastTen(phone)))
+  );
+}
 
 const DAY = 86_400_000;
 const at = (days: number, hour: number, durationHours = 2) => {
@@ -456,6 +535,76 @@ Bun.serve({
       // Like Dove: every successful call returns a freshly signed token (sliding session).
       const accessToken = startSession(session.key, session.hasPin);
       return ok({ person: { ...people[session.key], hasPin: session.hasPin }, church, accessToken });
+    }
+
+    if (url.pathname.startsWith("/api/v1/profile/me/relatives")) {
+      const session = sessionFrom(req);
+      if (session instanceof Response) return session;
+      const mine = () => relatives.filter((r) => r.ownerKey === session.key);
+
+      if (req.method === "GET" && url.pathname === "/api/v1/profile/me/relatives") {
+        return ok({ items: mine().map(relativeView) });
+      }
+
+      if (req.method === "POST" && url.pathname === "/api/v1/profile/me/relatives") {
+        const body = (await req.json()) as {
+          firstName?: string;
+          lastName?: string;
+          relationship?: string;
+          relationshipNote?: string;
+          email?: string;
+          phone?: string;
+        };
+        if (body.firstName === "Fail") return fail(500, "Internal server error");
+        if (!body.firstName || !body.lastName || !body.relationship) return fail(400, "Name and relationship are required");
+        if (!body.email && !body.phone) {
+          return fail(400, "Please provide an email address or a phone number.", "CONTACT_REQUIRED");
+        }
+        if (contactTaken(body.email, body.phone)) {
+          return fail(409, "This email or phone number is already registered.", "CONTACT_ALREADY_REGISTERED");
+        }
+        const added: StubRelative = {
+          relationshipId: `rel-${crypto.randomUUID().slice(0, 8)}`,
+          ownerKey: session.key,
+          person: { id: `p-${crypto.randomUUID().slice(0, 8)}`, firstName: body.firstName, lastName: body.lastName },
+          relationship: body.relationship,
+          relationshipNote: body.relationshipNote ?? null,
+          addedByMe: true,
+          claimed: false,
+          email: body.email?.toLowerCase() ?? null,
+          phone: body.phone ?? null,
+        };
+        relatives.push(added);
+        return Response.json(
+          { success: true, message: "Relative added", data: relativeView(added), timestamp: new Date().toISOString() },
+          { status: 201 },
+        );
+      }
+
+      const idMatch = url.pathname.match(/^\/api\/v1\/profile\/me\/relatives\/([^/]+)(\/claim-link)?$/);
+      if (idMatch) {
+        const id = decodeURIComponent(idMatch[1]);
+        if (req.method === "DELETE" && !idMatch[2]) {
+          const index = relatives.findIndex((r) => r.relationshipId === id && r.ownerKey === session.key);
+          if (index === -1) return fail(404, "Relationship not found");
+          relatives.splice(index, 1);
+          return new Response(null, { status: 204 });
+        }
+        if (req.method === "POST" && idMatch[2]) {
+          const target = mine().find((r) => r.person.id === id);
+          if (!target || !target.addedByMe) return fail(403, "You can only send a link to someone you added.", "NOT_CREATOR");
+          if (target.claimed) return fail(409, "This person has already set up their profile.", "ALREADY_CLAIMED");
+          if (!target.phone) return fail(409, "This person has no phone number.", "NO_PHONE");
+          const link = `${APP}/profile/member-sarah`;
+          const text = `Hi ${target.person.firstName}, it's Sarah. I've added you to ABWOG so we're all connected. Open this link to set up your profile: ${link}`;
+          return ok({
+            url: link,
+            whatsappUrl: `https://wa.me/${target.phone.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`,
+            expiresAt: new Date(Date.now() + 2 * DAY).toISOString(),
+          });
+        }
+      }
+      return fail(404, "Not found");
     }
 
     if (req.method === "PUT" && url.pathname === "/api/v1/profile/me/pin") {

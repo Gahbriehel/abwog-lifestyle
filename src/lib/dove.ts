@@ -11,8 +11,11 @@ import type {
   MemberLoginPayload,
   MemberLoginResult,
   MemberSession,
+  AddRelativePayload,
   NightPrayerNext,
   PushTopic,
+  Relative,
+  RelativeClaimLink,
   ProfileBootstrap,
   RegisterPayload,
   RegisterResult,
@@ -128,6 +131,38 @@ export async function setMemberPin(
 
 export async function logoutMember(accessToken: string): Promise<void> {
   await doveFetch("/profile/logout", { method: "POST", headers: bearer(accessToken) });
+}
+
+// ── Family links (signed-in member). See docs/dove-family-links.md ─────────
+
+export async function getRelatives(accessToken: string): Promise<Relative[]> {
+  const data = await doveFetch<{ items?: Relative[] } | Relative[]>("/profile/me/relatives", {
+    headers: bearer(accessToken),
+  });
+  return Array.isArray(data) ? data : (data.items ?? []);
+}
+
+export function addRelative(accessToken: string, payload: AddRelativePayload): Promise<Relative> {
+  return doveFetch<Relative>("/profile/me/relatives", {
+    method: "POST",
+    headers: bearer(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function removeRelative(accessToken: string, relationshipId: string): Promise<void> {
+  await doveFetch(`/profile/me/relatives/${encodeURIComponent(relationshipId)}`, {
+    method: "DELETE",
+    headers: bearer(accessToken),
+  });
+}
+
+/** Issues a fresh single-use link for someone this member added, ready to send on WhatsApp. */
+export function createRelativeClaimLink(accessToken: string, personId: string): Promise<RelativeClaimLink> {
+  return doveFetch<RelativeClaimLink>(`/profile/me/relatives/${encodeURIComponent(personId)}/claim-link`, {
+    method: "POST",
+    headers: bearer(accessToken),
+  });
 }
 
 // ── Public content (no session needed) ─────────────────────────────────────

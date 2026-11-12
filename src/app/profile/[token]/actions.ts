@@ -26,6 +26,12 @@ const FIELD_CODES: Partial<Record<ProfileErrorCode, { field: FieldName; message:
     message: "Please select at least one department.",
   },
   NAMES_REQUIRED: { field: "firstName", message: "Please enter your first name." },
+  // Deliberately vague: Dove doesn't say which one matched, or who owns it.
+  CONTACT_ALREADY_REGISTERED: {
+    field: "email",
+    message: "This email or phone number is already registered. Please use a different one.",
+  },
+  CONTACT_REQUIRED: { field: "email", message: "Please enter an email address or a phone number." },
 };
 
 /**
