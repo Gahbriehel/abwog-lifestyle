@@ -22,6 +22,7 @@ All data lives in the **Dove** API (`../dove`, deployed at `https://api.abwog.or
 - Backend work for giving: [docs/dove-giving-accounts.md](docs/dove-giving-accounts.md)
 - Backend work for confessions: [docs/dove-confessions.md](docs/dove-confessions.md)
 - Backend work for push notifications and the Night Prayer: [docs/dove-notifications.md](docs/dove-notifications.md)
+- Backend work for family links and unique contact details: [docs/dove-family-links.md](docs/dove-family-links.md)
 - Backend work this app depends on: Part A of `dove/docs/PHASE2_MESSAGING_AND_PROFILE_IMPLEMENTATION.md`
 - Church WhatsApp setup: [docs/whatsapp-business-setup.md](docs/whatsapp-business-setup.md)
 
