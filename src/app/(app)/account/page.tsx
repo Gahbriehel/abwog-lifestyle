@@ -48,9 +48,9 @@ export default async function AccountPage() {
       </section>
 
       <div className="mt-4 space-y-4">
+        <FamilyCard relatives={relatives} />
         <NotificationsCard />
         <PinSettings hasPin={person.hasPin} />
-        <FamilyCard relatives={relatives} />
         <Link href="/profile" className={buttonClasses("secondary", true)}>
           Update my details
         </Link>
