@@ -131,7 +131,7 @@ export function NotificationsCard() {
 
   return (
     <Shell onTripleClick={subscribed && !busy ? test : undefined}>
-      <p className="mt-1 text-sm text-fg-muted">Prayer alerts, confessions, scriptures and encouragement on this device.</p>
+      <p className="mt-1 text-sm text-fg-muted">Prayer alerts, confessions, scriptures and faith boosts on this device.</p>
 
       <div className="mt-4 flex items-center justify-between gap-4">
         <span id="push-switch-label" className="text-sm font-semibold">

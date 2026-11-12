@@ -5,7 +5,7 @@ export const PUSH_TOPICS: readonly { id: PushTopic; label: string; description: 
   { id: "night-prayer", label: "Night Prayer", description: "Prayer start and reminder alerts" },
   { id: "confessions", label: "Confessions", description: "Daily and seasonal confession reminders" },
   { id: "scriptures", label: "Scriptures", description: "The weekly and yearly scripture" },
-  { id: "encouragement", label: "Encouragement", description: "Short words of faith" },
+  { id: "encouragement", label: "Faith Boosts", description: "Short words of faith" },
 ];
 
 export const ALL_PUSH_TOPICS: PushTopic[] = PUSH_TOPICS.map((t) => t.id);
