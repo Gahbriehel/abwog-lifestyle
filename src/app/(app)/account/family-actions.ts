@@ -19,7 +19,7 @@ export type AddRelativeResult =
   | { ok: false; field?: FieldName; message: string; signedOut?: boolean };
 
 /** Deliberately vague: Dove never says which of the two matched, or who owns it. */
-export const CONTACT_TAKEN_MESSAGE =
+const CONTACT_TAKEN_MESSAGE =
   "This email or phone number is already registered. Please use a different one.";
 
 export async function addFamilyMember(input: AddRelativeInput): Promise<AddRelativeResult> {
