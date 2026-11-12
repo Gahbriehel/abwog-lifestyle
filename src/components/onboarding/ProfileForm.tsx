@@ -133,6 +133,7 @@ export function ProfileForm({
                 <PillRadioGroup
                   ref={field.ref}
                   legend="Gender"
+                  required
                   name={field.name}
                   options={GENDER_OPTIONS}
                   value={field.value}
@@ -228,7 +229,7 @@ export function ProfileForm({
                     description={
                       departmentsRequired
                         ? "Select all that apply."
-                        : "Select any departments you lead or serve in (optional)."
+                        : "Select any departments you lead or serve in."
                     }
                     name={field.name}
                     options={availableDepartments.map((d) => ({

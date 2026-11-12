@@ -87,7 +87,7 @@ export function RegisterFlow({ event, defaults }: Props) {
               <span aria-hidden>🇳🇬</span> +234
             </>
           }
-          hint="Optional if you gave an email."
+          hint="Needed if you did not give an email."
           error={errors.phone?.message}
           {...register("phone")}
         />

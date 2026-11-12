@@ -144,7 +144,7 @@ describe("addRelativeSchema", () => {
     lastName: "Adeyemi",
     relationship: "SPOUSE" as const,
     relationshipNote: "",
-    gender: "" as const,
+    gender: "MALE" as const,
     dateOfBirth: "",
     email: "Tunde@Example.com",
     phone: "",
@@ -185,7 +185,7 @@ describe("toAddRelativePayload", () => {
       lastName: "Adeyemi",
       relationship: "SPOUSE",
       relationshipNote: "",
-      gender: "",
+      gender: "MALE",
       dateOfBirth: "",
       email: "Tunde@Example.com",
       phone: "",
@@ -196,6 +196,7 @@ describe("toAddRelativePayload", () => {
     expect(toAddRelativePayload(values())).toEqual({
       firstName: "Tunde",
       lastName: "Adeyemi",
+      gender: "MALE",
       relationship: "SPOUSE",
       email: "tunde@example.com",
     });
@@ -214,7 +215,7 @@ describe("toUpdatePayload", () => {
   const values = profileSchema.parse({
     firstName: " Sarah ",
     lastName: "Adeyemi",
-    gender: "",
+    gender: "FEMALE",
     dateOfBirth: "",
     email: "Sarah@Example.com",
     phone: "",
@@ -227,6 +228,7 @@ describe("toUpdatePayload", () => {
     expect(toUpdatePayload(values)).toEqual({
       firstName: "Sarah",
       lastName: "Adeyemi",
+      gender: "FEMALE",
       email: "sarah@example.com",
       address: "",
       membershipStatus: "MEMBER",

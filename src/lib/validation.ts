@@ -45,7 +45,7 @@ const profileObject = z
       .trim()
       .min(1, "Please enter your last name.")
       .max(100, "That's a bit long. Please shorten it."),
-    gender: z.enum(["MALE", "FEMALE", "OTHER"]).or(z.literal("")),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"], { error: "Please select a gender." }).or(z.literal("")).refine((v) => v !== "", "Please select a gender."),
     dateOfBirth: z
       .string()
       .refine((v) => v === "" || isPastDate(v), "Please choose a valid date."),
@@ -232,7 +232,7 @@ export const addRelativeSchema = z
       error: "Please choose how they are related to you.",
     }),
     relationshipNote: z.string().trim().max(100, "Please keep this under 100 characters."),
-    gender: z.enum(["MALE", "FEMALE", "OTHER"]).or(z.literal("")),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"], { error: "Please select a gender." }).or(z.literal("")).refine((v) => v !== "", "Please select a gender."),
     dateOfBirth: z.string().refine((v) => v === "" || isPastDate(v), "Please choose a valid date."),
     email: z
       .string()

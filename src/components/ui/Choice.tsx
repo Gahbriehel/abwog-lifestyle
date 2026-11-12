@@ -60,6 +60,7 @@ export function PillRadioGroup<T extends string>({
   value,
   onChange,
   error,
+  required,
   ref,
 }: {
   ref?: Ref<HTMLFieldSetElement>;
@@ -69,9 +70,10 @@ export function PillRadioGroup<T extends string>({
   value: T | "";
   onChange: (value: T) => void;
   error?: string;
+  required?: boolean;
 }) {
   return (
-    <Group ref={ref} legend={legend} error={error}>
+    <Group ref={ref} legend={legend} error={error} required={required}>
       <div className="grid grid-cols-3 gap-2">
         {options.map((option) => {
           const selected = value === option.value;

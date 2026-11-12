@@ -318,7 +318,8 @@ function AddFamilyForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
         render={({ field }) => (
           <PillRadioGroup
             ref={field.ref}
-            legend="Gender (optional)"
+            legend="Gender"
+            required
             name={field.name}
             options={GENDER_OPTIONS}
             value={field.value}
@@ -328,7 +329,7 @@ function AddFamilyForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
         )}
       />
       <TextField
-        label="Date of birth (optional)"
+        label="Date of birth"
         type="date"
         max={today}
         min="1900-01-01"
