@@ -28,6 +28,7 @@
 //                                                      newcomer@example.com) → 409 CONTACT_ALREADY_REGISTERED; first name "Fail" → 500
 //   DELETE /profile/me/relatives/:relationshipId       removes the link only
 //   POST   /profile/me/relatives/:personId/claim-link  wa.me link; 409 ALREADY_CLAIMED, 409 NO_PHONE, 403 NOT_CREATOR
+//   POST   /profile/me/relatives/:personId/invite-email  emails a fresh link; 409 ALREADY_CLAIMED, 409 NO_EMAIL, 403 NOT_CREATOR
 //
 // Public content (dates are relative to when the stub starts, so they are always upcoming):
 //   GET  /events (?category, ?search, ?page, ?limit)   published events, past ones included like Dove
@@ -169,6 +170,7 @@ function relativeView(r: StubRelative) {
     maskedEmail: r.email ? maskStubEmail(r.email) : null,
     maskedPhone: r.phone ? maskPhone(r.phone) : null,
     canSendClaimLink: r.addedByMe && !r.claimed && Boolean(r.phone),
+    canSendInviteEmail: r.addedByMe && !r.claimed && Boolean(r.email),
   };
 }
 
@@ -576,12 +578,12 @@ Bun.serve({
         };
         relatives.push(added);
         return Response.json(
-          { success: true, message: "Relative added", data: relativeView(added), timestamp: new Date().toISOString() },
+          { success: true, message: "Relative added", data: { ...relativeView(added), inviteEmailSent: Boolean(added.email) }, timestamp: new Date().toISOString() },
           { status: 201 },
         );
       }
 
-      const idMatch = url.pathname.match(/^\/api\/v1\/profile\/me\/relatives\/([^/]+)(\/claim-link)?$/);
+      const idMatch = url.pathname.match(/^\/api\/v1\/profile\/me\/relatives\/([^/]+)(\/claim-link|\/invite-email)?$/);
       if (idMatch) {
         const id = decodeURIComponent(idMatch[1]);
         if (req.method === "DELETE" && !idMatch[2]) {
@@ -590,7 +592,18 @@ Bun.serve({
           relatives.splice(index, 1);
           return new Response(null, { status: 204 });
         }
-        if (req.method === "POST" && idMatch[2]) {
+        if (req.method === "POST" && idMatch[2] === "/invite-email") {
+          const target = mine().find((r) => r.person.id === id);
+          if (!target || !target.addedByMe) return fail(403, "You can only invite someone you added.", "NOT_CREATOR");
+          if (target.claimed) return fail(409, "This person has already set up their profile.", "ALREADY_CLAIMED");
+          if (!target.email) return fail(409, "This person has no email address.", "NO_EMAIL");
+          return ok({
+            sent: true,
+            maskedEmail: maskStubEmail(target.email),
+            expiresAt: new Date(Date.now() + 2 * DAY).toISOString(),
+          });
+        }
+        if (req.method === "POST" && idMatch[2] === "/claim-link") {
           const target = mine().find((r) => r.person.id === id);
           if (!target || !target.addedByMe) return fail(403, "You can only send a link to someone you added.", "NOT_CREATOR");
           if (target.claimed) return fail(409, "This person has already set up their profile.", "ALREADY_CLAIMED");

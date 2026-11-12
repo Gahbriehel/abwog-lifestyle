@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addRelative, createRelativeClaimLink, removeRelative } from "@/lib/dove";
+import { addRelative, createRelativeClaimLink, removeRelative, sendRelativeInviteEmail } from "@/lib/dove";
 import { DoveError } from "@/lib/dove-errors";
 import { getSessionToken } from "@/lib/session";
 import {
@@ -15,7 +15,7 @@ type FieldName = keyof AddRelativeInput;
 const SIGNED_OUT = "Your session has ended. Please sign in again.";
 
 export type AddRelativeResult =
-  | { ok: true }
+  | { ok: true; inviteEmailSent: boolean; maskedEmail: string | null }
   | { ok: false; field?: FieldName; message: string; signedOut?: boolean };
 
 /** Deliberately vague: Dove never says which of the two matched, or who owns it. */
@@ -33,9 +33,9 @@ export async function addFamilyMember(input: AddRelativeInput): Promise<AddRelat
   if (!accessToken) return { ok: false, signedOut: true, message: SIGNED_OUT };
 
   try {
-    await addRelative(accessToken, toAddRelativePayload(parsed.data));
+    const added = await addRelative(accessToken, toAddRelativePayload(parsed.data));
     revalidatePath("/account");
-    return { ok: true };
+    return { ok: true, inviteEmailSent: added.inviteEmailSent === true, maskedEmail: added.maskedEmail ?? null };
   } catch (error) {
     if (error instanceof DoveError) {
       if (error.status === 401) return { ok: false, signedOut: true, message: SIGNED_OUT };
@@ -109,5 +109,44 @@ export async function getFamilyClaimLink(personId: string): Promise<ClaimLinkRes
     }
     console.error("getFamilyClaimLink failed", error instanceof DoveError ? error.status : error);
     return { ok: false, message: "We couldn't prepare their link. Please try again." };
+  }
+}
+
+export type InviteEmailResult =
+  | { ok: true; maskedEmail: string }
+  | { ok: false; message: string; signedOut?: boolean };
+
+export async function resendFamilyInviteEmail(personId: string): Promise<InviteEmailResult> {
+  if (typeof personId !== "string" || personId.length === 0 || personId.length > 100) {
+    return { ok: false, message: "We couldn't send that invite." };
+  }
+  const accessToken = await getSessionToken();
+  if (!accessToken) return { ok: false, signedOut: true, message: SIGNED_OUT };
+  try {
+    const { maskedEmail } = await sendRelativeInviteEmail(accessToken, personId);
+    revalidatePath("/account");
+    return { ok: true, maskedEmail };
+  } catch (error) {
+    if (error instanceof DoveError) {
+      if (error.status === 401) return { ok: false, signedOut: true, message: SIGNED_OUT };
+      if (error.status === 429) {
+        return { ok: false, message: "You've reached today's limit for this person. Try again tomorrow." };
+      }
+      if (error.code === "NOT_CREATOR") {
+        return { ok: false, message: "Only the person who added them can send their invite." };
+      }
+      if (error.code === "ALREADY_CLAIMED") {
+        revalidatePath("/account");
+        return { ok: false, message: "They've already set up their profile, so they don't need an invite." };
+      }
+      if (error.code === "NO_EMAIL") {
+        return { ok: false, message: "They don't have an email address on their profile." };
+      }
+      if (error.code === "EMAIL_SEND_FAILED") {
+        return { ok: false, message: "We couldn't send the email. Please try again later." };
+      }
+    }
+    console.error("resendFamilyInviteEmail failed", error instanceof DoveError ? error.status : error);
+    return { ok: false, message: "We couldn't send the email. Please try again later." };
   }
 }

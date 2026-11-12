@@ -287,6 +287,20 @@ export interface Relative {
   maskedEmail: string | null;
   maskedPhone: string | null;
   canSendClaimLink: boolean;
+  /** Unclaimed + added by me + has an email: the invite email can be (re)sent. */
+  canSendInviteEmail: boolean;
+}
+
+export interface AddRelativeResponse extends Relative {
+  /** True when an invite email was dispatched on creation (attempted, not a delivery guarantee). */
+  inviteEmailSent: boolean;
+}
+
+export interface RelativeInviteEmail {
+  sent: boolean;
+  maskedEmail: string;
+  /** ISO timestamp. */
+  expiresAt: string;
 }
 
 export interface AddRelativePayload {

@@ -12,10 +12,12 @@ import type {
   MemberLoginResult,
   MemberSession,
   AddRelativePayload,
+  AddRelativeResponse,
   NightPrayerNext,
   PushTopic,
   Relative,
   RelativeClaimLink,
+  RelativeInviteEmail,
   ProfileBootstrap,
   RegisterPayload,
   RegisterResult,
@@ -142,8 +144,8 @@ export async function getRelatives(accessToken: string): Promise<Relative[]> {
   return Array.isArray(data) ? data : (data.items ?? []);
 }
 
-export function addRelative(accessToken: string, payload: AddRelativePayload): Promise<Relative> {
-  return doveFetch<Relative>("/profile/me/relatives", {
+export function addRelative(accessToken: string, payload: AddRelativePayload): Promise<AddRelativeResponse> {
+  return doveFetch<AddRelativeResponse>("/profile/me/relatives", {
     method: "POST",
     headers: bearer(accessToken),
     body: JSON.stringify(payload),
@@ -160,6 +162,14 @@ export async function removeRelative(accessToken: string, relationshipId: string
 /** Issues a fresh single-use link for someone this member added, ready to send on WhatsApp. */
 export function createRelativeClaimLink(accessToken: string, personId: string): Promise<RelativeClaimLink> {
   return doveFetch<RelativeClaimLink>(`/profile/me/relatives/${encodeURIComponent(personId)}/claim-link`, {
+    method: "POST",
+    headers: bearer(accessToken),
+  });
+}
+
+/** Issues a fresh 48-hour link and emails it. Waits for the send, so failures surface. */
+export function sendRelativeInviteEmail(accessToken: string, personId: string): Promise<RelativeInviteEmail> {
+  return doveFetch<RelativeInviteEmail>(`/profile/me/relatives/${encodeURIComponent(personId)}/invite-email`, {
     method: "POST",
     headers: bearer(accessToken),
   });

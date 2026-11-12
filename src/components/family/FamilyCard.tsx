@@ -1,13 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageCircle, UserPlus, Users } from "lucide-react";
+import { Mail, MessageCircle, UserPlus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   addFamilyMember,
   getFamilyClaimLink,
+  resendFamilyInviteEmail,
   unlinkFamilyMember,
 } from "@/app/(app)/account/family-actions";
 import { Button } from "@/components/ui/Button";
@@ -71,9 +72,13 @@ export function FamilyCard({ relatives }: { relatives: Relative[] }) {
 
       {adding ? (
         <AddFamilyForm
-          onDone={() => {
+          onDone={(result) => {
             setAdding(false);
-            setNotice("Added. They'll appear here.");
+            setNotice(
+              result.inviteEmailSent && result.maskedEmail
+                ? `Added. We emailed an invite to ${result.maskedEmail}.`
+                : "Added. They'll appear here.",
+            );
           }}
           onCancel={() => setAdding(false)}
         />
@@ -117,6 +122,21 @@ function RelativeRow({
       if (result.ok) {
         // Opens WhatsApp on this phone with their link ready to send. Dove sends nothing itself.
         window.location.assign(result.whatsappUrl);
+        return;
+      }
+      if (result.signedOut) return router.push("/login");
+      setError(result.message);
+    });
+  };
+
+  const sendEmail = () => {
+    setError(null);
+    onNotice(null);
+    startTransition(async () => {
+      const result = await resendFamilyInviteEmail(person.id);
+      if (result.ok) {
+        onNotice(`We emailed an invite to ${result.maskedEmail}.`);
+        router.refresh();
         return;
       }
       if (result.signedOut) return router.push("/login");
@@ -175,6 +195,18 @@ function RelativeRow({
             Send their link on WhatsApp
           </Button>
         )}
+        {relative.canSendInviteEmail && !relative.claimed && (
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={pending && !confirming}
+            loadingLabel="Sending…"
+            icon={<Mail aria-hidden className="size-4" />}
+            onClick={sendEmail}
+          >
+            Resend invite email
+          </Button>
+        )}
         {confirming ? (
           <>
             <p className="w-full text-sm text-fg-muted">
@@ -198,7 +230,13 @@ function RelativeRow({
   );
 }
 
-function AddFamilyForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+function AddFamilyForm({
+  onDone,
+  onCancel,
+}: {
+  onDone: (result: { inviteEmailSent: boolean; maskedEmail: string | null }) => void;
+  onCancel: () => void;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
@@ -227,7 +265,7 @@ function AddFamilyForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
     startTransition(async () => {
       const result = await addFamilyMember(values);
       if (result.ok) {
-        onDone();
+        onDone(result);
         router.refresh();
         return;
       }
