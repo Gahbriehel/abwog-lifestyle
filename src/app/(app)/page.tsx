@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { EventCard } from "@/components/events/EventCard";
 import { NightPrayerCard } from "@/components/home/NightPrayerCard";
+import { PrayerRequestCard } from "@/components/home/PrayerRequestCard";
 import { ScriptureCard } from "@/components/home/ScriptureCard";
 import { InstallCard } from "@/components/onboarding/InstallCard";
 import { appUrl } from "@/lib/app-url";
@@ -81,6 +82,8 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      <PrayerRequestCard />
 
       <InstallCard appUrl={appUrl()} />
 

@@ -320,3 +320,14 @@ export interface RelativeClaimLink {
   /** ISO timestamp. */
   expiresAt: string;
 }
+
+/** Body for Dove's public POST /contact when sending a prayer request. */
+export interface PrayerRequestPayload {
+  type: "prayer";
+  name: string;
+  email: string;
+  phone?: string;
+  category: string;
+  message: string;
+  isPrivate: boolean;
+}

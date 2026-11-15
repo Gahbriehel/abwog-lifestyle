@@ -10,6 +10,8 @@ import {
   changePinSchemaFor,
   loginSchema,
   newPinSchema,
+  prayerRequestSchema,
+  toPrayerPayload,
   profileSchema,
   profileSchemaFor,
   registerSchema,
@@ -435,5 +437,37 @@ describe("registerSchema", () => {
       email: "ada@example.com",
       phone: "+2348034567890",
     });
+  });
+});
+
+describe("prayer requests", () => {
+  const valid = {
+    name: "Sarah Adeyemi",
+    email: "Sarah@Example.com",
+    phone: "",
+    category: "General Prayer" as const,
+    message: "Please pray for my family.",
+    visibility: "PUBLIC" as const,
+  };
+
+  it("needs a name, an email and a message", () => {
+    expect(prayerRequestSchema.safeParse(valid).success).toBe(true);
+    expect(prayerRequestSchema.safeParse({ ...valid, name: " " }).success).toBe(false);
+    expect(prayerRequestSchema.safeParse({ ...valid, email: "" }).success).toBe(false);
+    expect(prayerRequestSchema.safeParse({ ...valid, message: "  " }).success).toBe(false);
+  });
+
+  it("rejects unknown categories, bad phones and over-long messages", () => {
+    expect(prayerRequestSchema.safeParse({ ...valid, category: "Other" }).success).toBe(false);
+    expect(prayerRequestSchema.safeParse({ ...valid, phone: "123" }).success).toBe(false);
+    expect(prayerRequestSchema.safeParse({ ...valid, message: "x".repeat(1001) }).success).toBe(false);
+  });
+
+  it("maps visibility to isPrivate and normalises contact details", () => {
+    const pub = toPrayerPayload(prayerRequestSchema.parse(valid));
+    expect(pub).toMatchObject({ type: "prayer", email: "sarah@example.com", isPrivate: false });
+    expect(pub).not.toHaveProperty("phone");
+    const priv = toPrayerPayload(prayerRequestSchema.parse({ ...valid, visibility: "PRIVATE", phone: "803 456 7890" }));
+    expect(priv).toMatchObject({ isPrivate: true, phone: "+2348034567890" });
   });
 });

@@ -4,6 +4,7 @@ The member-facing Progressive Web App for **Abiding Word Of Grace Missions** (PK
 
 What anyone can do, without signing in:
 - See what's coming up on the home page and the **Events** tab, open an event and **register** for it (they get a check-in QR code).
+- Send a **prayer request** (from the menu or the home page), public or private, with their name and email.
 - Open **Give** (from the menu or the home page) to see the church's bank accounts and copy an account number.
 - Browse **Confessions** (from the menu or the home page): search, read, and **listen**. Each confession can have a recorded female and male voice, with speed control, skip back and forward 15 seconds, and lock-screen controls. A confession without a recording is read aloud by the phone's own voice, sentence by sentence, with pause and speed controls.
 
@@ -46,6 +47,7 @@ The stub prints the "emailed" link when you request one. You can also open these
 | `/profile/anything-else` | Invalid or used link screen |
 | `/events`, `/events/event-youth` | Public events (also `event-sunday` no registration, `event-full`, `event-ended`) |
 | `/events/event-youth/register` | Register; email `dupe@example.com` → "already registered", first name `Fail` → error |
+| `/prayer` | Prayer request form; message containing `Fail` → error, name `Slow` → rate limit |
 | `/give` | Three giving accounts (NGN, NGN, USD) |
 | `/confessions` | Four confessions: search, categories (Peace, Protection, Provision) |
 | `/confessions/confession-for-protection` | Both voices (female and male), with next link |

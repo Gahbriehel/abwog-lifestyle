@@ -35,6 +35,7 @@
 //   GET  /events/:id
 //   POST /events/:id/register   dupe@example.com → 409 with the existing registration
 //                               first name "Fail" → 500; events event-full / event-ended / event-sunday → 400
+//   POST /contact               prayer request (public). Message containing "Fail" → 500, name "Slow" → 429, bad category → 400
 //   GET  /giving-accounts       active accounts, sorted; ?purpose=TITHE filters (see docs/dove-giving-accounts.md)
 //   GET  /confessions (?search, ?category, ?page, ?limit≤100)   published, in staff order, with position
 //   GET  /confessions/categories
@@ -702,6 +703,19 @@ Bun.serve({
           { status: 201 },
         );
       }
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/v1/contact") {
+      const body = (await req.json()) as { type?: string; name?: string; email?: string; category?: string; message?: string; isPrivate?: boolean };
+      const categories = ["Healing & Health", "Family & Marriage", "Financial Breakthrough", "Spiritual Growth", "General Prayer"];
+      if (body.type !== "prayer" || !body.name || !body.email || !body.message) return fail(400, "Invalid submission", "VALIDATION_ERROR");
+      if (!body.category || !categories.includes(body.category)) return fail(400, "Invalid category", "VALIDATION_ERROR");
+      if (body.name === "Slow") return fail(429, "Too many requests");
+      if (body.message.includes("Fail")) return fail(500, "Internal server error");
+      return Response.json(
+        { success: true, message: "Your prayer request has been submitted successfully.", data: { id: "contact_stub", isPrivate: body.isPrivate ?? false }, timestamp: new Date().toISOString() },
+        { status: 201 },
+      );
     }
 
     if (req.method === "GET" && url.pathname === "/api/v1/giving-accounts") {

@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { validateNewPin } from "./pin";
 import { toE164 } from "./phone";
-import type { AddRelativePayload, MembershipStatus, RegisterPayload, UpdateProfilePayload } from "./types";
+import { PRAYER_CATEGORIES, PRAYER_MAX_LENGTH } from "./prayer";
+import type { AddRelativePayload, MembershipStatus, PrayerRequestPayload, RegisterPayload, UpdateProfilePayload } from "./types";
 
 export const claimSchema = z.object({
   email: z
@@ -268,5 +269,44 @@ export function toAddRelativePayload(values: AddRelativeValues): AddRelativePayl
     ...(phone ? { phone } : {}),
     ...(values.gender ? { gender: values.gender } : {}),
     ...(values.dateOfBirth ? { dateOfBirth: values.dateOfBirth } : {}),
+  };
+}
+
+/** A prayer request: Dove needs a name and an email; phone is optional. Public by default. */
+export const prayerRequestSchema = z.object({
+  name: z.string().trim().min(1, "Please enter your name.").max(255, "That's a bit long. Please shorten it."),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Please enter your email address.")
+    .email("Please enter a valid email address.")
+    .max(255, "That email address is too long."),
+  phone: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || toE164(v) !== null, "That number doesn't look right. Please check it."),
+  category: z.enum(PRAYER_CATEGORIES, { error: "Please choose a category." }),
+  message: z
+    .string()
+    .trim()
+    .min(1, "Please write your prayer request.")
+    .max(PRAYER_MAX_LENGTH, `Please keep it under ${PRAYER_MAX_LENGTH} characters.`),
+  visibility: z.enum(["PUBLIC", "PRIVATE"]),
+  /** Honeypot: hidden from people, so only bots fill it in. */
+  website: z.string().max(0).optional(),
+});
+
+export type PrayerRequestValues = z.infer<typeof prayerRequestSchema>;
+
+export function toPrayerPayload(values: PrayerRequestValues): PrayerRequestPayload {
+  const phone = values.phone ? toE164(values.phone) : null;
+  return {
+    type: "prayer",
+    name: values.name,
+    email: values.email.toLowerCase(),
+    ...(phone ? { phone } : {}),
+    category: values.category,
+    message: values.message,
+    isPrivate: values.visibility === "PRIVATE",
   };
 }

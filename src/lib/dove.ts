@@ -14,6 +14,7 @@ import type {
   AddRelativePayload,
   AddRelativeResponse,
   NightPrayerNext,
+  PrayerRequestPayload,
   PushTopic,
   Relative,
   RelativeClaimLink,
@@ -193,6 +194,11 @@ export function registerForEvent(id: string, payload: RegisterPayload): Promise<
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+/** Public. Dove files it under the default church; staff read it in Olive admin. */
+export async function submitPrayerRequest(payload: PrayerRequestPayload): Promise<void> {
+  await doveFetch<unknown>("/contact", { method: "POST", body: JSON.stringify(payload) });
 }
 
 /** Public, active accounts only, already sorted. See docs/dove-giving-accounts.md. */
