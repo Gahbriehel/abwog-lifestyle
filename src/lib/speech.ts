@@ -12,9 +12,15 @@ export interface SpeechChunk {
 
 const MAX_CHUNK = 220;
 
+// Lookbehind (`(?<=…)`) is a syntax error on Safari before 16.4, so splits are done by marking the
+// break with a NUL character instead.
+const SENTENCE_END = /([.!?…]["”’')\]]*)\s+/g;
+const CLAUSE_END = /([,;:])\s+/g;
+
 export function splitSentences(paragraph: string): string[] {
   return paragraph
-    .split(/(?<=[.!?…]["”’')\]]*)\s+/)
+    .replace(SENTENCE_END, "$1\u0000")
+    .split("\u0000")
     .map((s) => s.trim())
     .filter(Boolean);
 }
@@ -24,7 +30,7 @@ function splitLong(sentence: string, max: number): string[] {
   if (sentence.length <= max) return [sentence];
   const pieces: string[] = [];
   let current = "";
-  for (const part of sentence.split(/(?<=[,;:])\s+/)) {
+  for (const part of sentence.replace(CLAUSE_END, "$1\u0000").split("\u0000")) {
     if (part.length > max) {
       if (current) pieces.push(current);
       current = "";
