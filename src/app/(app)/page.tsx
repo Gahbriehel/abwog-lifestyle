@@ -78,7 +78,7 @@ export default async function HomePage() {
               No upcoming events right now. Check back soon.
             </p>
           ) : (
-            events.map((event) => <EventCard key={event.id} event={event} />)
+            events.map((event) => <EventCard key={event.id} event={event} showImage />)
           )}
         </div>
       </section>
