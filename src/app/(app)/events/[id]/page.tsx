@@ -1,9 +1,9 @@
 import { CalendarDays, ChevronLeft, MapPin, Users } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ErrorCard } from "@/components/events/EventsEmpty";
+import { EventImage } from "@/components/events/EventImage";
 import { buttonClasses } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Misc";
 import { cn } from "@/lib/cn";
@@ -67,14 +67,7 @@ export default async function EventPage({ params }: Params) {
         )}
       >
         {event.imageUrl && (
-          <Image
-            src={event.imageUrl}
-            alt=""
-            width={1200}
-            height={675}
-            unoptimized
-            className="aspect-video w-full rounded-[var(--radius-card)] object-cover [grid-area:media]"
-          />
+          <EventImage src={event.imageUrl} title={event.title} className="[grid-area:media]" />
         )}
         <header className="[grid-area:head]">
           <Badge tone="primary">{CATEGORY_LABELS[event.category] ?? event.category}</Badge>
